@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/Plugins/">
+    <Project Path="Lithium.InventoryPlugin/Lithium.InventoryPlugin.csproj" />
+    <Project Path="Lithium.TestPlugin.Abstractions/Lithium.TestPlugin.Abstractions.csproj" />
+    <Project Path="Lithium.TestPlugin/Lithium.TestPlugin.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="compose.yaml" />
+  </Folder>
+  <Project Path="Lithium.Client/Lithium.Client.csproj" />
+  <Project Path="Lithium.Core/Lithium.Core.csproj" />
+  <Project Path="Lithium.Server.Core/Lithium.Server.Core.csproj" />
+  <Project Path="Lithium.Server/Lithium.Server.csproj" />
+</Solution>

@@ -1,7 +1,7 @@
 ﻿services:
-  hytale.server:
-    image: hytale.server
+  lithium.server:
+    image: lithium.server
     build:
       context: .
-      dockerfile: Hytale.Server/Dockerfile
+      dockerfile: Lithium.Server/Dockerfile
 
