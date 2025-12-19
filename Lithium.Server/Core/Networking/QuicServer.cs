@@ -1,10 +1,7 @@
 ﻿using System.Net;
 using System.Net.Quic;
 using System.Net.Security;
-using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using System.Security.Cryptography.X509Certificates;
-using Lithium.Core.Networking;
 using Microsoft.Extensions.Logging;
 
 namespace Lithium.Server.Core.Networking;
@@ -14,9 +11,6 @@ public interface IQuicServer
     Task StartAsync(CancellationToken ct);
 }
 
-[SupportedOSPlatform("windows")]
-[SupportedOSPlatform("linux")]
-[SupportedOSPlatform("macos")]
 public sealed class QuicServer(
     ILogger<QuicServer> logger,
     PacketHandler packetHandler

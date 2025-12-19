@@ -1,14 +1,10 @@
 ﻿using System.Net.Quic;
 using System.Runtime.CompilerServices;
-using System.Runtime.Versioning;
 using Lithium.Core.Networking;
 using Microsoft.Extensions.Logging;
 
 namespace Lithium.Server.Core.Networking;
 
-[SupportedOSPlatform("windows")]
-[SupportedOSPlatform("linux")]
-[SupportedOSPlatform("macos")]
 public sealed class PacketHandler(
     ILogger<PacketHandler> logger,
     PacketRegistry packetRegistry,
@@ -23,7 +19,7 @@ public sealed class PacketHandler(
         // Lire le header
         var headerBytes = new byte[Unsafe.SizeOf<PacketHeader>()];
         _ = await stream.ReadAsync(headerBytes, CancellationToken.None);
-        var header = PacketSerializer.Deserialize<PacketHeader>(headerBytes);
+        var header = PacketSerializer.DeserializeHeader(headerBytes);
 
         // Lire le payload
         var payloadBytes = new byte[header.Length];
@@ -38,7 +34,7 @@ public sealed class PacketHandler(
             return;
         }
 
-        var packetContext = new PacketContext(connection);
+        var packetContext = new PacketContext(connection, stream);
         packetRouter.Route(header.TypeId, payloadBytes, packetContext);
 
         // var packet3 = "pong"u8.ToArray();

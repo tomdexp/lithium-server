@@ -48,7 +48,7 @@ public sealed class Logger
     {
         _logger.LogTrace(exception, exception.Message);
     }
-    
+
     public void Debug(object message)
     {
         _logger.LogDebug(message.ToString());
@@ -65,7 +65,7 @@ public sealed class Logger
     {
         _logger.LogDebug(exception, exception.Message);
     }
-    
+
     public void Info(object message)
     {
         _logger.LogInformation(message.ToString());
@@ -75,7 +75,7 @@ public sealed class Logger
     {
         _logger.LogInformation(message.Format, message.GetArguments());
     }
-    
+
     public void Warning(object message)
     {
         _logger.LogWarning(message.ToString());
@@ -85,7 +85,7 @@ public sealed class Logger
     {
         _logger.LogWarning(message.Format, message.GetArguments());
     }
-    
+
     public void Error(object message)
     {
         _logger.LogError(message.ToString());

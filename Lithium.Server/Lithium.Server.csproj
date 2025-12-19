@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <NoWarn>1701;1702;CA1416</NoWarn>
+        <NoWarn>1701;1702;CA1416</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,14 +17,14 @@
             <Link>.dockerignore</Link>
         </Content>
     </ItemGroup>
-    
+
     <ItemGroup>
         <Using Include="Lithium.Server.Core.GlobalNamespace" Static="true"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Lithium.Core\Lithium.Core.csproj" />
-        <ProjectReference Include="..\Lithium.Server.Core\Lithium.Server.Core.csproj" />
+        <ProjectReference Include="..\Lithium.Core\Lithium.Core.csproj"/>
+        <ProjectReference Include="..\Lithium.Server.Core\Lithium.Server.Core.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

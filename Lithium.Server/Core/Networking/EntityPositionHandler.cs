@@ -1,11 +1,13 @@
 ﻿using System.Numerics;
-using Lithium.Core.Networking;
+using Lithium.Core.Networking.Packets;
 using Microsoft.Extensions.Logging;
 
 namespace Lithium.Server.Core.Networking;
 
-public sealed class EntityPositionHandler(ILogger<EntityPositionHandler> logger, IEntityManager entityManager)
-    : IPacketHandler<EntityPositionPacket>
+public sealed class EntityPositionHandler(
+    ILogger<EntityPositionHandler> logger,
+    IEntityManager entityManager
+) : IPacketHandler<EntityPositionPacket>
 {
     void IPacketHandler<EntityPositionPacket>.Handle(in EntityPositionPacket p, PacketContext ctx)
     {

@@ -9,13 +9,13 @@ public sealed class InventoryPlugin : Component, IPlayerEvent
     {
         Log.Info("Loading inventory plugin");
 
-        var player = World.Current.GetPlayer(0);
-
-        if (player is null)
-        {
-            Log.Info("Player not found");
-            return;
-        }
+        // var player = World.Current.GetPlayer(0);
+        //
+        // if (player is null)
+        // {
+        //     Log.Info("Player not found");
+        //     return;
+        // }
     }
 
     public override void OnUnload()

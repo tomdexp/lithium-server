@@ -27,13 +27,13 @@ public sealed class EventSystem(IServiceProvider services, ILogger<EventSystem> 
         foreach (var assembly in pluginManager.Assemblies)
         {
             logger.LogInformation("Looking assembly: " + assembly.FullName);
-            
+
             var types = assembly.GetTypes()
                 .Where(x => x is { IsAbstract: false, IsClass: true } && x.IsAssignableTo(typeof(Component)))
                 .Where(x => x.IsAssignableTo(typeof(TEvent)))
                 .Select(x => scope.ServiceProvider.GetService(x))
                 .ToList();
-            
+
             logger.LogInformation("Found {Count} components", types.Count);
 
             foreach (var type in types)

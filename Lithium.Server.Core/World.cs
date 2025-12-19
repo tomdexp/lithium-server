@@ -24,8 +24,8 @@ public sealed class World
         _worldService.SetWorld(world);
     }
 
-    public Client? GetPlayer(int serverId)
-    {
-        return _entities.OfType<Client>().FirstOrDefault(x => x.ServerId == serverId);
-    }
+    // public Client? GetPlayer(int serverId)
+    // {
+    //     return _entities.OfType<Client>().FirstOrDefault(x => x.ServerId == serverId);
+    // }
 }

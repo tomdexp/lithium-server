@@ -8,7 +8,7 @@ namespace Lithium.Server;
 public interface IServerConfigurationProvider
 {
     ServerConfiguration Configuration { get; }
-    
+
     Task<ServerConfiguration> LoadAsync();
 }
 

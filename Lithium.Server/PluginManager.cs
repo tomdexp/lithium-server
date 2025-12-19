@@ -16,7 +16,7 @@ public sealed class PluginManager(
 
     private readonly PluginRegistry _registry = (PluginRegistry)registry;
     private readonly Dictionary<Assembly, IComponent> _instances = [];
-    
+
     public List<Assembly> Assemblies { get; private set; } = [];
 
     public void LoadPlugins()
@@ -68,7 +68,7 @@ public sealed class PluginManager(
             plugin.OnUnload();
             _registry.Unregister(plugin);
         }
-        
+
         _instances.Clear();
         Assemblies.Clear();
     }

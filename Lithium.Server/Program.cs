@@ -1,9 +1,9 @@
 ﻿using System.Reflection;
-using Lithium.Core;
-using Lithium.Core.Networking;
 using Lithium.Server;
 using Lithium.Server.Core;
+using Lithium.Server.Core.Logging;
 using Lithium.Server.Core.Networking;
+using Lithium.Server.Core.Networking.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -26,6 +26,7 @@ builder.Logging.AddFilter("System", LogLevel.Warning);
 builder.Services.AddSingleton<IServerConfigurationProvider, JsonServerConfigurationProvider>();
 builder.Services.AddSingleton<EventSystem>();
 builder.Services.AddSingleton<ILoggerService, LoggerService>();
+builder.Services.AddSingleton<IClientManager, ClientManager>();
 builder.Services.AddSingleton<IPluginRegistry, PluginRegistry>();
 builder.Services.AddSingleton<IPluginManager, PluginManager>();
 builder.Services.AddSingleton<IWorldService, WorldService>();
@@ -34,11 +35,7 @@ builder.Services.AddSingleton<IEntityManager, EntityManager>();
 builder.Services.AddPacketHandlers(Assembly.GetExecutingAssembly());
 
 // Networking
-if (OperatingSystem.IsSupported())
-{
-    builder.Services.AddSingleton<IQuicServer, QuicServer>();
-    // builder.Services.AddTransient<PacketHandler>();
-}
+builder.Services.AddSingleton<IQuicServer, QuicServer>();
 
 // Lifetime
 builder.Services.AddHostedService<ServerLifetime>();

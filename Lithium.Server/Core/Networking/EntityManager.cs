@@ -3,8 +3,8 @@
 public interface IEntityManager
 {
     IReadOnlyList<Entity> Entities { get; }
-    
-    Entity? Get(int entityId);
+
+    Entity? Get(ulong entityId);
 }
 
 public sealed class EntityManager : IEntityManager
@@ -15,7 +15,7 @@ public sealed class EntityManager : IEntityManager
 
     public void RegisterEntity(Entity entity)
     {
-        entity.Id = Entities.Count + 1;
+        entity.Id = (ulong)Entities.Count + 1;
         _entities.Add(entity);
     }
 
@@ -24,7 +24,7 @@ public sealed class EntityManager : IEntityManager
         _entities.Remove(entity);
     }
 
-    public Entity? Get(int entityId)
+    public Entity? Get(ulong entityId)
     {
         return _entities.FirstOrDefault(x => x.Id == entityId);
     }

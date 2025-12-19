@@ -4,6 +4,7 @@ using System.Net;
 using Lithium.Client;
 using Lithium.Client.Core.Networking;
 using Lithium.Core;
+using Lithium.Core.Extensions;
 using Lithium.Core.Networking;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

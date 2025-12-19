@@ -10,8 +10,8 @@ public sealed class MyPlugin(ILogger<MyPlugin> logger, EventSystem eventSystem) 
     {
         logger.LogInformation("Loading test plugin");
 
-        var player = World.Current.GetPlayer(0);
-        eventSystem.Post<IPlayerEvent>(x => x.OnPlayerDied(player));
+        // var player = World.Current.GetPlayer(0);
+        // eventSystem.Post<IPlayerEvent>(x => x.OnPlayerDied(player));
     }
 
     public override void OnUnload()

@@ -5,23 +5,33 @@ namespace Lithium.Core.Networking;
 
 public static class PacketSerializer
 {
-    public static T Deserialize<T>(ReadOnlySpan<byte> data) where T : struct
+    private static T DeserializeInternal<T>(ReadOnlySpan<byte> data)
+        where T : unmanaged
     {
         return MemoryMarshal.Read<T>(data);
     }
 
-    public static ReadOnlyMemory<byte> SerializePacket<T>(
-        in T packet,
-        ushort typeId)
+    public static PacketHeader DeserializeHeader(ReadOnlySpan<byte> data)
+    {
+        return DeserializeInternal<PacketHeader>(data);
+    }
+
+    public static T Deserialize<T>(ReadOnlySpan<byte> data)
         where T : unmanaged, IPacket
     {
-        var payloadSize = Unsafe.SizeOf<T>();
-        var headerSize  = Unsafe.SizeOf<PacketHeader>();
+        return DeserializeInternal<T>(data);
+    }
 
-        var buffer = new byte[headerSize + payloadSize];
+    public static ReadOnlyMemory<byte> SerializePacket<T>(in T packet, ushort typeId)
+        where T : unmanaged, IPacket
+    {
+        var packetSize = Unsafe.SizeOf<T>();
+        var headerSize = Unsafe.SizeOf<PacketHeader>();
+
+        var buffer = new byte[headerSize + packetSize];
         var span = buffer.AsSpan();
 
-        var header = new PacketHeader(typeId, (ushort)payloadSize);
+        var header = new PacketHeader(typeId, (ushort)packetSize);
 
         MemoryMarshal.Write(span, in header);
         MemoryMarshal.Write(span[headerSize..], in packet);

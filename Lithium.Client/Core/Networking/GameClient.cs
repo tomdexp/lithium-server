@@ -12,9 +12,6 @@ public interface IGameClient : IAsyncDisposable
     ValueTask SendPacketAsync<T>(T packet, CancellationToken ct = default) where T : unmanaged, IPacket;
 }
 
-[SupportedOSPlatform("windows")]
-[SupportedOSPlatform("linux")]
-[SupportedOSPlatform("macos")]
 public sealed class QuicGameClient : IGameClient
 {
     private readonly QuicClientOptions _options;
@@ -26,7 +23,7 @@ public sealed class QuicGameClient : IGameClient
     public QuicGameClient(PacketRegistry packetRegistry, QuicClientOptions options)
     {
         _packetRegistry = packetRegistry;
-        
+
         if (!QuicListener.IsSupported)
             throw new PlatformNotSupportedException("QUIC not supported");
 
@@ -64,7 +61,7 @@ public sealed class QuicGameClient : IGameClient
         await _stream.WriteAsync(data, ct);
     }
 
-    public async ValueTask SendPacketAsync<T>(T packet, CancellationToken ct = default) 
+    public async ValueTask SendPacketAsync<T>(T packet, CancellationToken ct = default)
         where T : unmanaged, IPacket
     {
         var typeId = _packetRegistry.GetPacketId<T>();

@@ -2,7 +2,7 @@
 using Lithium.Core.Networking;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Lithium.Server.Core.Networking;
+namespace Lithium.Server.Core.Networking.Extensions;
 
 public static class PacketServiceCollectionExtensions
 {
@@ -26,13 +26,10 @@ public static class PacketServiceCollectionExtensions
             }
         }
 
-        // Packet Handlers
-        // services.AddSingleton<IPacketHandler<EntityPositionPacket>, EntityPositionHandler>();
-
         services.AddSingleton<PacketHandler>();
         services.AddSingleton<PacketRegistry>();
         services.AddSingleton<PacketRouter>();
-        
+
         return services;
     }
 }
