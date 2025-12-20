@@ -12,7 +12,7 @@ public sealed class PacketRegistry
         _types[id] = typeof(T);
     }
 
-    public ushort GetPacketId<T>() where T : unmanaged, IPacket
+    public static ushort GetPacketId<T>() where T : unmanaged, IPacket
     {
         var attr = typeof(T).GetCustomAttribute<PacketIdAttribute>();
         return attr?.Id ?? throw new InvalidOperationException("Missing PacketIdAttribute");

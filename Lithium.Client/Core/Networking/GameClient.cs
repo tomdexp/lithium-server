@@ -61,7 +61,7 @@ public sealed class QuicGameClient : IGameClient
     public async ValueTask SendPacketAsync<T>(T packet, CancellationToken ct = default)
         where T : unmanaged, IPacket
     {
-        var typeId = _packetRegistry.GetPacketId<T>();
+        var typeId = PacketRegistry.GetPacketId<T>();
         await SendAsync(PacketSerializer.SerializePacket(packet, typeId), ct);
     }
 

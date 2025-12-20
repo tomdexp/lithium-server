@@ -19,7 +19,7 @@ public sealed class ClientConnectHandler(
             ctx.Connection.LocalEndPoint, ctx.Connection.RemoteEndPoint);
 
         var packet = new ServerAcceptPacket();
-        var packetId = packetRegistry.GetPacketId<ServerAcceptPacket>();
+        var packetId = PacketRegistry.GetPacketId<ServerAcceptPacket>();
         var packetSize = (ushort)Unsafe.SizeOf<ServerAcceptPacket>();
         var header = new PacketHeader(packetId, packetSize);
 

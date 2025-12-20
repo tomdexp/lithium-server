@@ -28,7 +28,7 @@ public sealed class PacketRouter
         where TPacket : unmanaged, IPacket
         where THandler : IPacketHandler<TPacket>
     {
-        var id = _packetRegistry.GetPacketId<TPacket>();
+        var id = PacketRegistry.GetPacketId<TPacket>();
         var handler = sp.GetRequiredService<THandler>();
 
         _packetRegistry.RegisterType<TPacket>();
