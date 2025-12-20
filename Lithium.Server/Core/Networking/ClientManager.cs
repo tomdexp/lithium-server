@@ -6,30 +6,36 @@ namespace Lithium.Server.Core.Networking;
 
 public interface IClientManager
 {
-    void RegisterClient(ulong clientId, QuicConnection connection);
-    void UnregisterClient(ulong clientId);
+    void CreateClient(QuicConnection connection, int protocolVersion);
+    void RemoveClient(QuicConnection connection);
+    Client GetClient(QuicConnection connection);
 }
 
 public sealed class ClientManager(
     ILogger<ClientManager> logger
 ) : IClientManager
 {
-    private readonly Dictionary<ulong, QuicConnection> _clients = [];
+    private int _currentServerId;
+    private readonly Dictionary<QuicConnection, Client> _clients = [];
 
-    public void RegisterClient(ulong clientId, QuicConnection connection)
+    public void CreateClient(QuicConnection connection, int protocolVersion)
     {
-        _clients[clientId] = connection;
-        logger.LogInformation("Client {ClientId} connected", clientId);
+        var serverId = GetNextServerId();
+
+        _clients[connection] = new Client(connection, protocolVersion, serverId);
+        logger.LogInformation($"Client connected using protocol version {protocolVersion} with server id {serverId}");
     }
 
-    public void UnregisterClient(ulong clientId)
+    public void RemoveClient(QuicConnection connection)
     {
-        _clients.Remove(clientId);
-        logger.LogInformation("Client {ClientId} disconnected", clientId);
+        _clients.Remove(connection);
+        logger.LogInformation("Client {ClientId} disconnected", connection);
     }
 
-    public QuicConnection GetClient(ulong clientId)
+    public Client GetClient(QuicConnection connection)
     {
-        return _clients[clientId];
+        return _clients[connection];
     }
+
+    private int GetNextServerId() => _currentServerId is 0 ? 0 : _currentServerId++;
 }

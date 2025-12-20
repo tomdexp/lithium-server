@@ -1,13 +1,14 @@
 ﻿using System.Net.Quic;
 using System.Net.Security;
-using System.Runtime.Versioning;
 using Lithium.Core.Networking;
+using Lithium.Core.Networking.Packets;
 
 namespace Lithium.Client.Core.Networking;
 
 public interface IGameClient : IAsyncDisposable
 {
     ValueTask ConnectAsync(CancellationToken ct = default);
+    ValueTask ClientConnectAsync(CancellationToken ct = default);
     ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken ct = default);
     ValueTask SendPacketAsync<T>(T packet, CancellationToken ct = default) where T : unmanaged, IPacket;
 }
@@ -46,14 +47,10 @@ public sealed class QuicGameClient : IGameClient
             }
         }, ct);
 
-        _stream = await _connection
-            .OpenOutboundStreamAsync(
-                QuicStreamType.Bidirectional, ct);
+        _stream = await _connection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional, ct);
     }
 
-    public async ValueTask SendAsync(
-        ReadOnlyMemory<byte> data,
-        CancellationToken ct = default)
+    public async ValueTask SendAsync(ReadOnlyMemory<byte> data, CancellationToken ct = default)
     {
         if (_stream is null)
             throw new InvalidOperationException("Client not connected");
@@ -66,6 +63,12 @@ public sealed class QuicGameClient : IGameClient
     {
         var typeId = _packetRegistry.GetPacketId<T>();
         await SendAsync(PacketSerializer.SerializePacket(packet, typeId), ct);
+    }
+
+    public async ValueTask ClientConnectAsync(CancellationToken ct = default)
+    {
+        var packet = new ClientConnectPacket(ProtocolVersion.Current);
+        await SendPacketAsync(packet, ct);
     }
 
     public async ValueTask DisposeAsync()

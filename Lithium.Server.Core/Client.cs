@@ -2,8 +2,9 @@
 
 namespace Lithium.Server.Core;
 
-public sealed class Client : Component
+public sealed class Client(QuicConnection connection, int protocolVersion, int serverId)
 {
-    public int ServerId { get; internal set; }
-    public QuicConnection Connection { get; internal set; } = null!;
+    public readonly QuicConnection Connection = connection;
+    public readonly int ProtocolVersion = protocolVersion;
+    public readonly int ServerId = serverId;
 }

@@ -1,6 +1,4 @@
-﻿using Lithium.Core.Networking;
-using Lithium.Client.Core.Networking;
-using Lithium.Core.Networking.Packets;
+﻿using Lithium.Client.Core.Networking;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -16,14 +14,8 @@ public sealed class ClientLifetime(
         logger.LogInformation("Starting client");
 
         await client.ConnectAsync(stoppingToken);
-        logger.LogInformation("Client connected");
 
-        // await client.SendAsync("ping"u8.ToArray(), stoppingToken);
-        // logger.LogInformation("Client sent ping");
-
-        var packet = new EntityPositionPacket(0, 10, 100, 1000);
-        await client.SendPacketAsync(packet, stoppingToken);
-
-        logger.LogInformation("Client sent PlayerPositionPacket");
+        logger.LogInformation("Trying to connect..");
+        await client.ClientConnectAsync(stoppingToken);
     }
 }
