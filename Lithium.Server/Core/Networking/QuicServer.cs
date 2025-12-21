@@ -11,7 +11,8 @@ namespace Lithium.Server.Core.Networking;
 
 public sealed class QuicServer(
     ILogger<QuicServer> logger,
-    IPacketHandler packetHandler)
+    IPacketHandler packetHandler
+)
 {
     private const int HeartbeatInterval = 15;
     private const string Protocol = "hytale";
@@ -108,7 +109,7 @@ public sealed class QuicServer(
                 {
                     await stream.WriteAsync(data, ct);
                     await stream.FlushAsync(ct);
-                    
+
                     logger.LogInformation("Heartbeat sent");
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
