@@ -4,11 +4,9 @@ using Lithium.Server.Core;
 using Lithium.Server.Core.Logging;
 using Lithium.Server.Core.Networking;
 using Lithium.Server.Core.Networking.Extensions;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Lithium.Server.Dashboard;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.ClearProviders();
 
@@ -21,6 +19,9 @@ builder.Logging.AddSimpleConsole(options =>
 
 builder.Logging.AddFilter("Microsoft", LogLevel.Warning);
 builder.Logging.AddFilter("System", LogLevel.Warning);
+
+// SignalR
+builder.Services.AddSignalR();
 
 // Core services
 builder.Services.AddSingleton<IServerConfigurationProvider, JsonServerConfigurationProvider>();
@@ -38,5 +39,7 @@ builder.Services.AddSingleton<QuicServer>();
 builder.Services.AddHostedService<ServerLifetime>();
 
 var app = builder.Build();
+
+app.MapHub<ServerHub>("/hub/admin");
 
 app.Run();

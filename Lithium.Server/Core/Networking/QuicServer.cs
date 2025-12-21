@@ -5,12 +5,14 @@ using System.Security.Cryptography.X509Certificates;
 using Lithium.Core.Extensions;
 using Lithium.Core.Networking;
 using Lithium.Core.Networking.Packets;
-using Microsoft.Extensions.Logging;
+using Lithium.Server.Dashboard;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Lithium.Server.Core.Networking;
 
 public sealed class QuicServer(
     ILogger<QuicServer> logger,
+    IHubContext<ServerHub, IServerHub> hub,
     IPacketHandler packetHandler
 )
 {
@@ -110,6 +112,8 @@ public sealed class QuicServer(
                     await stream.WriteAsync(data, ct);
                     await stream.FlushAsync(ct);
 
+                    logger.LogInformation("Sending Heartbeat..");
+                    await hub.Clients.All.Heartbeat();
                     logger.LogInformation("Heartbeat sent");
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
