@@ -8,7 +8,7 @@ public sealed class ClientManager(ILoggerFactory loggerFactory) : IClientManager
 {
     private readonly ILogger<ClientManager> _logger = loggerFactory.CreateLogger<ClientManager>();
 
-    private int _currentServerId;
+    private int _currentServerId = -1;
     private readonly Dictionary<QuicConnection, Client> _clients = new();
     private bool _disposed;
 
@@ -72,7 +72,11 @@ public sealed class ClientManager(ILoggerFactory loggerFactory) : IClientManager
         await Task.WhenAll(tasks);
     }
 
-    private int GetNextServerId() => _currentServerId is 0 ? 0 : _currentServerId++;
+    private int GetNextServerId()
+    {
+        _currentServerId++;
+        return _currentServerId;
+    }
 
     public async ValueTask DisposeAsync()
     {
