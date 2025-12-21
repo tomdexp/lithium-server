@@ -75,7 +75,7 @@ public sealed class QuicClient(
 
                 var payload = new byte[header.Length];
                 await ReadExactAsync(_stream, payload, ct);
-
+                
                 packetRouter.Route(
                     header.TypeId,
                     payload,

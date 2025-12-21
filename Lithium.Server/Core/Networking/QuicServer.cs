@@ -71,12 +71,12 @@ public sealed class QuicServer(
         }
         catch (QuicException ex)
         {
-            if(ex.QuicError is QuicError.StreamAborted)
+            if (ex.QuicError is QuicError.StreamAborted)
             {
                 logger.LogInformation("Client stream aborted");
                 return;
             }
-            
+
             logger.LogError(ex, "Quic Error:");
         }
         catch (Exception ex)
@@ -90,24 +90,43 @@ public sealed class QuicServer(
         }
     }
 
-    private async Task HeartbeatLoopAsync(
-        QuicStream stream,
-        CancellationToken ct)
+    private async Task HeartbeatLoopAsync(QuicStream stream, CancellationToken ct)
     {
-        while (!ct.IsCancellationRequested)
+        try
         {
-            await Task.Delay(TimeSpan.FromSeconds(HeartbeatInterval), ct);
+            while (!ct.IsCancellationRequested)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(HeartbeatInterval), ct);
 
-            var packet = new HeartbeatPacket(DateTime.UtcNow.Ticks);
-            var packetId = PacketRegistry.GetPacketId<HeartbeatPacket>();
-            var header = new PacketHeader(packetId, packet.GetSize());
+                var packet = new HeartbeatPacket(DateTime.UtcNow.Ticks);
+                var packetId = PacketRegistry.GetPacketId<HeartbeatPacket>();
+                var header = new PacketHeader(packetId, packet.GetSize());
 
-            var data = PacketSerializer.SerializePacket(packet, header.TypeId);
+                var data = PacketSerializer.SerializePacket(packet, header.TypeId);
 
-            await stream.WriteAsync(data, ct);
-            await stream.FlushAsync(ct);
-
-            logger.LogInformation("Heartbeat sent");
+                try
+                {
+                    await stream.WriteAsync(data, ct);
+                    await stream.FlushAsync(ct);
+                    
+                    logger.LogInformation("Heartbeat sent");
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    logger.LogWarning(ex, "Failed to send heartbeat");
+                    break;
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            logger.LogInformation("Heartbeat loop was cancelled");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error in heartbeat loop");
+            throw;
         }
     }
 }
