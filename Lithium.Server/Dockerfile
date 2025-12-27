@@ -1,14 +1,15 @@
-﻿FROM mcr.microsoft.com/dotnet/runtime:10.0 AS base
+﻿FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 USER $APP_UID
 WORKDIR /app
+EXPOSE 5000
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["Lithium.Server/Lithium.Server.csproj", "Lithium.Server/"]
-RUN dotnet restore "Lithium.Server/Lithium.Server.csproj"
+COPY ["Game/Lithium.Server/Lithium.Server.csproj", "Game/Lithium.Server/"]
+RUN dotnet restore "Game/Lithium.Server/Lithium.Server.csproj"
 COPY . .
-WORKDIR "/src/Lithium.Server"
+WORKDIR "/src/Game/Lithium.Server"
 RUN dotnet build "./Lithium.Server.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
