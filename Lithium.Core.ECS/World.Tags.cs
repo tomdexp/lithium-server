@@ -9,9 +9,31 @@ public partial class World
         GetOrCreateTagSet<T>().Add(entity, tag);
     }
 
+    public bool HasTag(Entity entity, Type tagType)
+    {
+        return _tags.TryGetValue(tagType, out var set)
+               && set.Has(entity);
+    }
+
     public bool HasTag<T>(Entity entity) where T : struct, ITag
     {
-        return _tags.TryGetValue(typeof(T), out var set) && ((SparseSet<T>)set).Has(entity);
+        return _tags.TryGetValue(typeof(T), out var set)
+               && ((SparseSet<T>)set).Has(entity);
+    }
+    
+    public bool HasTags(Entity entity, params Type[] tagTypes)
+    {
+        return tagTypes.All(tagType => HasTag(entity, tagType));
+    }
+    
+    public bool HasAnyTag(Entity entity, params Type[] tagTypes)
+    {
+        return tagTypes.Any(tagType => HasTag(entity, tagType));
+    }
+    
+    public bool HasAllTags(Entity entity, params Type[] tagTypes)
+    {
+        return tagTypes.All(tagType => HasTag(entity, tagType));
     }
 
     public void RemoveTag<T>(Entity entity) where T : struct, ITag
@@ -25,7 +47,7 @@ public partial class World
         foreach (var (tagType, set) in _tags)
         {
             if (!set.Has(entity)) continue;
-            
+
             if (Activator.CreateInstance(tagType) is ITag tagInstance && filter(tagInstance))
                 return true;
         }

@@ -14,9 +14,29 @@ public readonly record struct Entity(World World)
         World.RemoveTag<T>(this);
     }
     
+    public bool HasTag(Type tagType)
+    {
+        return World.HasTag(this, tagType);
+    }
+    
     public bool HasTag<T>() where T : struct, ITag
     {
         return World.HasTag<T>(this);
+    }
+    
+    public bool HasTags(params Type[] tagTypes)
+    {
+        return World.HasTags(this, tagTypes);
+    }
+    
+    public bool HasAnyTag(params Type[] tagTypes)
+    {
+        return World.HasAnyTag(this, tagTypes);
+    }
+    
+    public bool HasAllTags(params Type[] tagTypes)
+    {
+        return World.HasAllTags(this, tagTypes);
     }
 
     public void AddComponent<T>(T component) where T : struct, IComponent

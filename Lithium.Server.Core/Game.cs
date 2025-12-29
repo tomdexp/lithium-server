@@ -22,8 +22,8 @@ public class Game
         
         cat.AddComponent(new Position(100, 100, 100));
         cat.AddComponent(new Rotation(100, 100, 100));
-        
-        foreach (var (entity, position, rotation) in World.Query<Position, Rotation>(x => x is DogTag))
+       
+        foreach (var (entity, position, rotation) in World.Query<Position, Rotation>().HasTag<DogTag>())
         {
             Console.WriteLine($"{entity.Id}: {position} / {rotation}");
         }

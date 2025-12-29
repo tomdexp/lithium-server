@@ -5,6 +5,7 @@ public interface ISparseSet
     int Count { get; }
     IReadOnlyList<EntityId> Entities { get; }
 
+    object GetComponent(Entity entity);
     bool Has(Entity entity);
 }
 
@@ -59,6 +60,14 @@ public sealed class SparseSet<T> : ISparseSet where T : struct
 
         component = default;
         return false;
+    }
+
+    public object GetComponent(Entity entity)
+    {
+        if (_sparse.TryGetValue(entity.Id, out var idx))
+            return _dense[idx];
+        
+        throw new KeyNotFoundException($"Entity {entity.Id} not found in set");
     }
 
     public bool Has(Entity entity) => _sparse.ContainsKey(entity.Id);
