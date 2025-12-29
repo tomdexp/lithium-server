@@ -1,9 +1,7 @@
 namespace Lithium.Core.ECS;
 
-public readonly record struct Entity(World World)
+public readonly record struct Entity(World World, EntityId Id)
 {
-    public EntityId Id { get; init; }
-    
     public void AddTag<T>() where T : struct, ITag
     {
         World.AddTag(this, default(T));

@@ -7,10 +7,7 @@ public partial class World
 
     public Entity CreateEntity()
     {
-        var entity = new Entity(this)
-        {
-            Id = ++_nextEntityId
-        };
+        var entity = new Entity(this, ++_nextEntityId);
 
         var key = new ArchetypeKey(ReadOnlySpan<Type>.Empty);
 

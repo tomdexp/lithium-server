@@ -3,7 +3,7 @@ namespace Lithium.Core.ECS;
 public interface ISparseSet
 {
     int Count { get; }
-    IReadOnlyList<EntityId> Entities { get; }
+    ReadOnlySpan<EntityId> Entities { get; }
 
     object GetComponent(Entity entity);
     bool Has(Entity entity);
@@ -11,42 +11,41 @@ public interface ISparseSet
 
 public sealed class SparseSet<T> : ISparseSet where T : struct
 {
-    private readonly List<T> _dense = [];
-    private readonly List<EntityId> _entities = [];
+    private T[] _dense = new T[16];
+    private EntityId[] _entities = new EntityId[16];
     private readonly Dictionary<EntityId, int> _sparse = [];
 
-    public int Count => _dense.Count;
-    public IReadOnlyList<T> Dense => _dense;
-    public IReadOnlyList<EntityId> Entities => _entities;
+    public int Count { get; private set; }
+    public ReadOnlySpan<EntityId> Entities => _entities.AsSpan(0, Count);
 
     public void Add(Entity entity, T component)
     {
         if (_sparse.TryGetValue(entity.Id, out var idx))
         {
             _dense[idx] = component;
+            return;
         }
-        else
-        {
-            _sparse[entity.Id] = _dense.Count;
-            _entities.Add(entity.Id);
-            _dense.Add(component);
-        }
+
+        if (Count == _dense.Length)
+            Grow();
+
+        _dense[Count] = component;
+        _entities[Count] = entity.Id;
+        _sparse[entity.Id] = Count;
+        Count++;
     }
 
     public void Remove(Entity entity)
     {
-        if (!_sparse.TryGetValue(entity.Id, out var idx)) return;
+        if (!_sparse.TryGetValue(entity.Id, out var idx))
+            return;
 
-        var lastIdx = _dense.Count - 1;
+        var last = --Count;
 
-        // Swap current <-> last
-        _dense[idx] = _dense[lastIdx];
-        _entities[idx] = _entities[lastIdx];
+        _dense[idx] = _dense[last];
+        _entities[idx] = _entities[last];
         _sparse[_entities[idx]] = idx;
 
-        // Remove last
-        _dense.RemoveAt(lastIdx);
-        _entities.RemoveAt(lastIdx);
         _sparse.Remove(entity.Id);
     }
 
@@ -70,5 +69,12 @@ public sealed class SparseSet<T> : ISparseSet where T : struct
         throw new KeyNotFoundException($"Entity {entity.Id} not found in set");
     }
 
-    public bool Has(Entity entity) => _sparse.ContainsKey(entity.Id);
+    public bool Has(Entity entity)
+        => _sparse.ContainsKey(entity.Id);
+
+    private void Grow()
+    {
+        Array.Resize(ref _dense, _dense.Length * 2);
+        Array.Resize(ref _entities, _entities.Length * 2);
+    }
 }
