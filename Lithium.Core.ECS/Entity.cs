@@ -1,12 +1,6 @@
 namespace Lithium.Core.ECS;
 
-[Serializable]
-public readonly record struct Entity
+public readonly record struct Entity(World World)
 {
-    public readonly EntityId Id;
-
-    internal Entity(EntityId id)
-    {
-        Id = id;
-    }
+    public EntityId Id { get; init; }
 }

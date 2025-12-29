@@ -5,11 +5,10 @@ public interface ISparseSet
     int Count { get; }
     IReadOnlyList<EntityId> Entities { get; }
 
-    
     bool Has(Entity entity);
 }
 
-public sealed class SparseSet<T> : ISparseSet where T : struct
+public sealed class SparseSet<T> : ISparseSet where T : struct, IComponent
 {
     private readonly List<T> _dense = [];
     private readonly List<EntityId> _entities = [];
@@ -38,13 +37,11 @@ public sealed class SparseSet<T> : ISparseSet where T : struct
         if (!_sparse.TryGetValue(entity.Id, out var idx)) return;
 
         var lastIdx = _dense.Count - 1;
-        var lastComponent = _dense[lastIdx];
-        var lastEntity = _entities[lastIdx];
 
         // Swap current <-> last
-        _dense[idx] = lastComponent;
-        _entities[idx] = lastEntity;
-        _sparse[lastEntity] = idx;
+        _dense[idx] = _dense[lastIdx];
+        _entities[idx] = _entities[lastIdx];
+        _sparse[_entities[idx]] = idx;
 
         // Remove last
         _dense.RemoveAt(lastIdx);
@@ -64,6 +61,5 @@ public sealed class SparseSet<T> : ISparseSet where T : struct
         return false;
     }
 
-    public bool Has(Entity entity)
-        => _sparse.ContainsKey(entity.Id);
+    public bool Has(Entity entity) => _sparse.ContainsKey(entity.Id);
 }

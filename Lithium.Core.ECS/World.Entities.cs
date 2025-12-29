@@ -7,7 +7,11 @@ public partial class World
 
     public Entity CreateEntity()
     {
-        var entity = new Entity(++_nextEntityId);
+        var entity = new Entity(this)
+        {
+            Id = ++_nextEntityId
+        };
+
         var key = new ArchetypeKey(ReadOnlySpan<Type>.Empty);
 
         if (!_archetypes.TryGetValue(key, out var archetype))
@@ -46,7 +50,7 @@ public partial class World
     }
 
     public void AddComponent<T>(Entity entity, T component)
-        where T : struct
+        where T : struct, IComponent
     {
         var oldArchetype = _entityArchetype[entity.Id];
 
@@ -83,7 +87,7 @@ public partial class World
     }
 
     public void RemoveComponent<T>(Entity entity)
-        where T : struct
+        where T : struct, IComponent
     {
         var oldArchetype = _entityArchetype[entity.Id];
 
