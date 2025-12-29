@@ -1,18 +1,19 @@
 namespace Lithium.Core.ECS;
 
-public sealed class MovementSystem : ISystem
+public sealed class MovementSystem : System
 {
-    public void Update(World world, float deltaTime)
+    public override void Update()
     {
-        foreach (var (entity, pos, vel) in world.Query<Position, Velocity>())
+        foreach (var (entity, pos, vel) in World.Query<Position, Velocity>())
         {
             var newPos = new Position(
-                pos.X + vel.X * deltaTime,
-                pos.Y + vel.Y * deltaTime,
-                pos.Z + vel.Z * deltaTime
+                pos.X + vel.X * DeltaTime,
+                pos.Y + vel.Y * DeltaTime,
+                pos.Z + vel.Z * DeltaTime
             );
 
-            world.AddComponent(entity, newPos); // Update position
+            // Update position
+            World.AddComponent(entity, newPos);
         }
     }
 }
