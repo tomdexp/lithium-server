@@ -1,452 +1,143 @@
-using System.Collections;
+using System.Runtime.CompilerServices;
 
 namespace Lithium.Core.ECS;
 
 public partial class World
 {
     private readonly Dictionary<ArchetypeKey, Archetype> _archetypes = [];
+    private readonly Dictionary<EntityId, Archetype> _entityArchetype = new();
 
-    // ===== Archetype Queries (O(n) direct) =====
-    private IReadOnlyList<Entity> QueryArchetype(params Type[] componentTypes)
+    private Archetype GetArchetype(params Type[] componentTypes)
     {
         var key = new ArchetypeKey(componentTypes);
 
-        return !_archetypes.TryGetValue(key, out var archetype)
-            ? []
-            : archetype.Entities;
-    }
-
-    public WorldQuery<T1> Query<T1>()
-        where T1 : struct, IComponent
-    {
-        var entities = QueryArchetype(typeof(T1));
-
-        var items = entities.Select(e => (e, new[]
-        {
-            _components[typeof(T1)].GetComponent(e)
-        }));
-
-        return new WorldQuery<T1>(items);
+        return _archetypes.TryGetValue(key, out var archetype)
+            ? archetype
+            : Archetype.Empty;
     }
 
     public WorldQuery<T1, T2> Query<T1, T2>()
         where T1 : struct, IComponent
         where T2 : struct, IComponent
     {
-        var entities = QueryArchetype(typeof(T1), typeof(T2));
-
-        var items = entities.Select(e => (e, new[]
-        {
-            _components[typeof(T1)].GetComponent(e),
-            _components[typeof(T2)].GetComponent(e)
-        }));
-
-        return new WorldQuery<T1, T2>(items);
+        var archetype = GetArchetype(typeof(T1), typeof(T2));
+        return new WorldQuery<T1, T2>(this, archetype);
     }
 
-    public WorldQuery<T1, T2, T3> Query<T1, T2, T3>()
+    public readonly struct WorldQuery<T1, T2>
         where T1 : struct, IComponent
         where T2 : struct, IComponent
-        where T3 : struct, IComponent
     {
-        var entities = QueryArchetype(typeof(T1), typeof(T2), typeof(T3));
+        private readonly World _world;
+        private readonly Archetype _archetype;
+        private readonly int[]? _with;
+        private readonly int[]? _without;
 
-        var items = entities.Select(e => (e, new[]
+        public delegate void QueryAction(Entity entity, ref T1 component1, ref T2 component2);
+
+        internal WorldQuery(
+            World world,
+            Archetype archetype,
+            int[]? with = null,
+            int[]? without = null)
         {
-            _components[typeof(T1)].GetComponent(e),
-            _components[typeof(T2)].GetComponent(e),
-            _components[typeof(T3)].GetComponent(e)
-        }));
-
-        return new WorldQuery<T1, T2, T3>(items);
-    }
-
-    public WorldQuery<T1, T2, T3, T4> Query<T1, T2, T3, T4>()
-        where T1 : struct, IComponent
-        where T2 : struct, IComponent
-        where T3 : struct, IComponent
-        where T4 : struct, IComponent
-    {
-        var entities = QueryArchetype(typeof(T1), typeof(T2), typeof(T3), typeof(T4));
-
-        var items = entities.Select(e => (e, new[]
-        {
-            _components[typeof(T1)].GetComponent(e),
-            _components[typeof(T2)].GetComponent(e),
-            _components[typeof(T3)].GetComponent(e),
-            _components[typeof(T4)].GetComponent(e)
-        }));
-
-        return new WorldQuery<T1, T2, T3, T4>(items);
-    }
-
-    public WorldQuery<T1, T2, T3, T4, T5> Query<T1, T2, T3, T4, T5>()
-        where T1 : struct, IComponent
-        where T2 : struct, IComponent
-        where T3 : struct, IComponent
-        where T4 : struct, IComponent
-        where T5 : struct, IComponent
-    {
-        var entities = QueryArchetype(typeof(T1), typeof(T2), typeof(T3), typeof(T4));
-
-        var items = entities.Select(e => (e, new[]
-        {
-            _components[typeof(T1)].GetComponent(e),
-            _components[typeof(T2)].GetComponent(e),
-            _components[typeof(T3)].GetComponent(e),
-            _components[typeof(T4)].GetComponent(e),
-            _components[typeof(T5)].GetComponent(e)
-        }));
-
-        return new WorldQuery<T1, T2, T3, T4, T5>(items);
-    }
-
-    public WorldQuery<T1, T2, T3, T4, T5, T6> Query<T1, T2, T3, T4, T5, T6>()
-        where T1 : struct, IComponent
-        where T2 : struct, IComponent
-        where T3 : struct, IComponent
-        where T4 : struct, IComponent
-        where T5 : struct, IComponent
-        where T6 : struct, IComponent
-    {
-        var entities = QueryArchetype(typeof(T1), typeof(T2), typeof(T3), typeof(T4));
-
-        var items = entities.Select(e => (e, new[]
-        {
-            _components[typeof(T1)].GetComponent(e),
-            _components[typeof(T2)].GetComponent(e),
-            _components[typeof(T3)].GetComponent(e),
-            _components[typeof(T4)].GetComponent(e),
-            _components[typeof(T5)].GetComponent(e),
-            _components[typeof(T6)].GetComponent(e)
-        }));
-
-        return new WorldQuery<T1, T2, T3, T4, T5, T6>(items);
-    }
-
-    public WorldQuery<T1, T2, T3, T4, T5, T6, T7> Query<T1, T2, T3, T4, T5, T6, T7>()
-        where T1 : struct, IComponent
-        where T2 : struct, IComponent
-        where T3 : struct, IComponent
-        where T4 : struct, IComponent
-        where T5 : struct, IComponent
-        where T6 : struct, IComponent
-        where T7 : struct, IComponent
-    {
-        var entities = QueryArchetype(typeof(T1), typeof(T2), typeof(T3), typeof(T4));
-
-        var items = entities.Select(e => (e, new[]
-        {
-            _components[typeof(T1)].GetComponent(e),
-            _components[typeof(T2)].GetComponent(e),
-            _components[typeof(T3)].GetComponent(e),
-            _components[typeof(T4)].GetComponent(e),
-            _components[typeof(T5)].GetComponent(e),
-            _components[typeof(T6)].GetComponent(e),
-            _components[typeof(T7)].GetComponent(e)
-        }));
-
-        return new WorldQuery<T1, T2, T3, T4, T5, T6, T7>(items);
-    }
-
-    public WorldQuery<T1, T2, T3, T4, T5, T6, T7, T8> Query<T1, T2, T3, T4, T5, T6, T7, T8>()
-        where T1 : struct, IComponent
-        where T2 : struct, IComponent
-        where T3 : struct, IComponent
-        where T4 : struct, IComponent
-        where T5 : struct, IComponent
-        where T6 : struct, IComponent
-        where T7 : struct, IComponent
-        where T8 : struct, IComponent
-    {
-        var entities = QueryArchetype(typeof(T1), typeof(T2), typeof(T3), typeof(T4));
-
-        var items = entities.Select(e => (e, new[]
-        {
-            _components[typeof(T1)].GetComponent(e),
-            _components[typeof(T2)].GetComponent(e),
-            _components[typeof(T3)].GetComponent(e),
-            _components[typeof(T4)].GetComponent(e),
-            _components[typeof(T5)].GetComponent(e),
-            _components[typeof(T6)].GetComponent(e),
-            _components[typeof(T7)].GetComponent(e),
-            _components[typeof(T8)].GetComponent(e)
-        }));
-
-        return new WorldQuery<T1, T2, T3, T4, T5, T6, T7, T8>(items);
-    }
-
-    public sealed class WorldQuery<T1> :
-        WorldQueryBase<WorldQuery<T1>>,
-        IEnumerable<(Entity, T1)>
-        where T1 : struct, IComponent
-    {
-        internal WorldQuery(IEnumerable<(Entity, object[])> items)
-            : base(items)
-        {
+            _world = world;
+            _archetype = archetype;
+            _with = with;
+            _without = without;
         }
 
-        public IEnumerator<(Entity, T1)> GetEnumerator()
+        public WorldQuery<T1, T2> HasTag<T>()
+            where T : struct, ITag
+            => new(_world, _archetype, Append(_with, TagTypeId<T>.Id), _without);
+
+        public WorldQuery<T1, T2> WithoutTag<T>()
+            where T : struct, ITag
+            => new(_world, _archetype, _with, Append(_without, TagTypeId<T>.Id));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void ForEachEntity(QueryAction action)
         {
-            foreach (var (entity, comps) in Items)
+            var entities = _archetype.Entities;
+
+            foreach (var entity in entities)
             {
-                yield return (
-                    entity,
-                    (T1)comps[0]
-                );
+                if (_with is not null && !_world.HasAllTags(entity, _with))
+                    continue;
+
+                if (_without is not null && _world.HasAnyTag(entity, _without))
+                    continue;
+
+                ref var c1 = ref _world.GetComponentRef<T1>(entity);
+                ref var c2 = ref _world.GetComponentRef<T2>(entity);
+
+                action(entity, ref c1, ref c2);
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    }
+        public Enumerator GetEnumerator()
+            => new(_world, _archetype, _with, _without);
 
-    public sealed class WorldQuery<T1, T2> :
-        WorldQueryBase<WorldQuery<T1, T2>>,
-        IEnumerable<(Entity, T1, T2)>
-        where T1 : struct, IComponent
-        where T2 : struct, IComponent
-    {
-        internal WorldQuery(IEnumerable<(Entity, object[])> items)
-            : base(items)
+        private static int[] Append(int[]? arr, int value)
         {
+            if (arr is null)
+                return [value];
+
+            var copy = new int[arr.Length + 1];
+            Array.Copy(arr, copy, arr.Length);
+            copy[^1] = value;
+
+            return copy;
         }
 
-        public IEnumerator<(Entity, T1, T2)> GetEnumerator()
+        public struct Enumerator
         {
-            foreach (var (entity, comps) in Items)
+            private readonly World _world;
+            private readonly Archetype _archetype;
+            private readonly int[]? _with;
+            private readonly int[]? _without;
+            private int _i;
+
+            internal Enumerator(
+                World world,
+                Archetype archetype,
+                int[]? with,
+                int[]? without)
             {
-                yield return (
-                    entity,
-                    (T1)comps[0],
-                    (T2)comps[1]
-                );
+                _world = world;
+                _archetype = archetype;
+                _with = with;
+                _without = without;
+                _i = -1;
             }
-        }
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    }
+            public (Entity, T1, T2) Current { get; private set; }
 
-    public sealed class WorldQuery<T1, T2, T3> :
-        WorldQueryBase<WorldQuery<T1, T2, T3>>,
-        IEnumerable<(Entity, T1, T2, T3)>
-        where T1 : struct, IComponent
-        where T2 : struct, IComponent
-        where T3 : struct, IComponent
-    {
-        internal WorldQuery(IEnumerable<(Entity, object[])> items)
-            : base(items)
-        {
-        }
-
-        public IEnumerator<(Entity, T1, T2, T3)> GetEnumerator()
-        {
-            foreach (var (entity, comps) in Items)
+            public bool MoveNext()
             {
-                yield return (
-                    entity,
-                    (T1)comps[0],
-                    (T2)comps[1],
-                    (T3)comps[2]
-                );
+                var entities = _archetype.Entities;
+
+                while (++_i < entities.Count)
+                {
+                    var entity = entities[_i];
+
+                    if (_with is not null && !_world.HasAllTags(entity, _with))
+                        continue;
+
+                    if (_without is not null && _world.HasAnyTag(entity, _without))
+                        continue;
+
+                    Current = (
+                        entity,
+                        _world.GetComponentRef<T1>(entity),
+                        _world.GetComponentRef<T2>(entity)
+                    );
+
+                    return true;
+                }
+
+                return false;
             }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    }
-
-    public sealed class WorldQuery<T1, T2, T3, T4> :
-        WorldQueryBase<WorldQuery<T1, T2, T3, T4>>,
-        IEnumerable<(Entity, T1, T2, T3, T4)>
-        where T1 : struct, IComponent
-        where T2 : struct, IComponent
-        where T3 : struct, IComponent
-        where T4 : struct, IComponent
-    {
-        internal WorldQuery(IEnumerable<(Entity, object[])> items)
-            : base(items)
-        {
-        }
-
-        public IEnumerator<(Entity, T1, T2, T3, T4)> GetEnumerator()
-        {
-            foreach (var (entity, comps) in Items)
-            {
-                yield return (
-                    entity,
-                    (T1)comps[0],
-                    (T2)comps[1],
-                    (T3)comps[2],
-                    (T4)comps[3]
-                );
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    }
-
-    public sealed class WorldQuery<T1, T2, T3, T4, T5> :
-        WorldQueryBase<WorldQuery<T1, T2, T3, T4, T5>>,
-        IEnumerable<(Entity, T1, T2, T3, T4, T5)>
-        where T1 : struct, IComponent
-        where T2 : struct, IComponent
-        where T3 : struct, IComponent
-        where T4 : struct, IComponent
-        where T5 : struct, IComponent
-    {
-        internal WorldQuery(IEnumerable<(Entity, object[])> items)
-            : base(items)
-        {
-        }
-
-        public IEnumerator<(Entity, T1, T2, T3, T4, T5)> GetEnumerator()
-        {
-            foreach (var (entity, comps) in Items)
-            {
-                yield return (
-                    entity,
-                    (T1)comps[0],
-                    (T2)comps[1],
-                    (T3)comps[2],
-                    (T4)comps[3],
-                    (T5)comps[4]
-                );
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    }
-
-    public sealed class WorldQuery<T1, T2, T3, T4, T5, T6> :
-        WorldQueryBase<WorldQuery<T1, T2, T3, T4, T5, T6>>,
-        IEnumerable<(Entity, T1, T2, T3, T4, T5, T6)>
-        where T1 : struct, IComponent
-        where T2 : struct, IComponent
-        where T3 : struct, IComponent
-        where T4 : struct, IComponent
-        where T5 : struct, IComponent
-        where T6 : struct, IComponent
-    {
-        internal WorldQuery(IEnumerable<(Entity, object[])> items)
-            : base(items)
-        {
-        }
-
-        public IEnumerator<(Entity, T1, T2, T3, T4, T5, T6)> GetEnumerator()
-        {
-            foreach (var (entity, comps) in Items)
-            {
-                yield return (
-                    entity,
-                    (T1)comps[0],
-                    (T2)comps[1],
-                    (T3)comps[2],
-                    (T4)comps[3],
-                    (T5)comps[4],
-                    (T6)comps[5]
-                );
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    }
-
-    public sealed class WorldQuery<T1, T2, T3, T4, T5, T6, T7> :
-        WorldQueryBase<WorldQuery<T1, T2, T3, T4, T5, T6, T7>>,
-        IEnumerable<(Entity, T1, T2, T3, T4, T5, T6, T7)>
-        where T1 : struct, IComponent
-        where T2 : struct, IComponent
-        where T3 : struct, IComponent
-        where T4 : struct, IComponent
-        where T5 : struct, IComponent
-        where T6 : struct, IComponent
-        where T7 : struct, IComponent
-    {
-        internal WorldQuery(IEnumerable<(Entity, object[])> items)
-            : base(items)
-        {
-        }
-
-        public IEnumerator<(Entity, T1, T2, T3, T4, T5, T6, T7)> GetEnumerator()
-        {
-            foreach (var (entity, comps) in Items)
-            {
-                yield return (
-                    entity,
-                    (T1)comps[0],
-                    (T2)comps[1],
-                    (T3)comps[2],
-                    (T4)comps[3],
-                    (T5)comps[4],
-                    (T6)comps[5],
-                    (T7)comps[6]
-                );
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    }
-
-    public sealed class WorldQuery<T1, T2, T3, T4, T5, T6, T7, T8> :
-        WorldQueryBase<WorldQuery<T1, T2, T3, T4, T5, T6, T7, T8>>,
-        IEnumerable<(Entity, T1, T2, T3, T4, T5, T6, T7, T8)>
-        where T1 : struct, IComponent
-        where T2 : struct, IComponent
-        where T3 : struct, IComponent
-        where T4 : struct, IComponent
-        where T5 : struct, IComponent
-        where T6 : struct, IComponent
-        where T7 : struct, IComponent
-        where T8 : struct, IComponent
-    {
-        internal WorldQuery(IEnumerable<(Entity, object[])> items)
-            : base(items)
-        {
-        }
-
-        public IEnumerator<(Entity, T1, T2, T3, T4, T5, T6, T7, T8)> GetEnumerator()
-        {
-            foreach (var (entity, comps) in Items)
-            {
-                yield return (
-                    entity,
-                    (T1)comps[0],
-                    (T2)comps[1],
-                    (T3)comps[2],
-                    (T4)comps[3],
-                    (T5)comps[4],
-                    (T6)comps[5],
-                    (T7)comps[6],
-                    (T8)comps[7]
-                );
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    }
-
-    public abstract class WorldQueryBase<TSelf>(IEnumerable<(Entity, object[])> items)
-        where TSelf : WorldQueryBase<TSelf>
-    {
-        protected IEnumerable<(Entity entity, object[] components)> Items = items;
-
-        protected TSelf Self => (TSelf)this;
-
-        public TSelf HasTag<TTag>() where TTag : struct, ITag
-        {
-            Items = Items.Where(x => x.entity.HasTag<TTag>());
-            return Self;
-        }
-
-        public TSelf HasAnyTag(params Type[] tagTypes)
-        {
-            Items = Items.Where(x => x.entity.HasAnyTag(tagTypes));
-            return Self;
-        }
-
-        public TSelf HasAllTags(params Type[] tagTypes)
-        {
-            Items = Items.Where(x => x.entity.HasAllTags(tagTypes));
-            return Self;
         }
     }
 }

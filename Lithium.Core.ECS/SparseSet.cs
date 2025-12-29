@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Lithium.Core.ECS;
 
 public interface ISparseSet
@@ -5,7 +7,7 @@ public interface ISparseSet
     int Count { get; }
     ReadOnlySpan<EntityId> Entities { get; }
 
-    object GetComponent(Entity entity);
+    IComponent GetComponent(Entity entity);
     bool Has(Entity entity);
 }
 
@@ -32,6 +34,7 @@ public sealed class SparseSet<T> : ISparseSet where T : struct
         _dense[Count] = component;
         _entities[Count] = entity.Id;
         _sparse[entity.Id] = Count;
+
         Count++;
     }
 
@@ -61,13 +64,17 @@ public sealed class SparseSet<T> : ISparseSet where T : struct
         return false;
     }
 
-    public object GetComponent(Entity entity)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref T GetComponentRef(Entity entity)
     {
         if (_sparse.TryGetValue(entity.Id, out var idx))
-            return _dense[idx];
-        
-        throw new KeyNotFoundException($"Entity {entity.Id} not found in set");
+            return ref _dense[idx];
+
+        throw new KeyNotFoundException();
     }
+
+    IComponent ISparseSet.GetComponent(Entity entity)
+        => (IComponent)GetComponentRef(entity);
 
     public bool Has(Entity entity)
         => _sparse.ContainsKey(entity.Id);

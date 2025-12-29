@@ -1,38 +1,38 @@
+using System.Runtime.CompilerServices;
+
 namespace Lithium.Core.ECS;
 
 public partial class World
 {
     private readonly Dictionary<Type, ISparseSet> _components = new();
 
-    private SparseSet<T> GetOrCreateSet<T>() where T : struct, IComponent
-    {
-        if (_components.TryGetValue(typeof(T), out var obj))
-            return (SparseSet<T>)obj;
+    public void AddComponent<T>(Entity e, T component)
+        where T : struct, IComponent
+        => GetSet<T>().Add(e, component);
 
-        var set = new SparseSet<T>();
-        _components[typeof(T)] = set;
+    public void RemoveComponent<T>(Entity e)
+        where T : struct, IComponent
+        => GetSet<T>().Remove(e);
+
+    public bool TryGetComponent<T>(Entity e, out T component)
+        where T : struct, IComponent
+        => GetSet<T>().TryGet(e, out component);
+
+    private SparseSet<T> GetSet<T>() where T : struct
+    {
+        if (_components.TryGetValue(typeof(T), out var set))
+            return (SparseSet<T>)set;
+
+        var created = new SparseSet<T>();
+        _components[typeof(T)] = created;
         
-        return set;
+        return created;
     }
 
-    private ISparseSet GetOrCreateSetByType(Type type)
-    {
-        if (_components.TryGetValue(type, out var obj))
-            return obj;
-
-        var setType = typeof(SparseSet<>).MakeGenericType(type);
-        var set = (ISparseSet)Activator.CreateInstance(setType)!;
-        _components[type] = set;
-        return set;
-    }
-
-    public bool TryGetComponent<T>(Entity entity, out T component)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref T GetComponentRef<T>(Entity entity)
         where T : struct, IComponent
     {
-        if (_components.TryGetValue(typeof(T), out var obj))
-            return ((SparseSet<T>)obj).TryGet(entity, out component);
-
-        component = default;
-        return false;
+        return ref ((SparseSet<T>)_components[typeof(T)]).GetComponentRef(entity);
     }
 }

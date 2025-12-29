@@ -2,54 +2,45 @@ namespace Lithium.Core.ECS;
 
 public partial class World
 {
-    private readonly Dictionary<Type, ISparseSet> _tags = new();
+    private readonly Dictionary<int, ISparseSet> _tags = new();
 
-    public void AddTag<T>(Entity entity, T tag) where T : struct, ITag
-    {
-        GetOrCreateTagSet<T>().Add(entity, tag);
-    }
-    
+    public void AddTag<T>(Entity entity) where T : struct, ITag
+        => GetTagSet<T>().Add(entity, default);
+
     public void RemoveTag<T>(Entity entity) where T : struct, ITag
-    {
-        if (_tags.TryGetValue(typeof(T), out var set))
-            ((SparseSet<T>)set).Remove(entity);
-    }
-
-    public bool HasTag(Entity entity, Type tagType)
-    {
-        return _tags.TryGetValue(tagType, out var set)
-               && set.Has(entity);
-    }
+        => GetTagSet<T>().Remove(entity);
 
     public bool HasTag<T>(Entity entity) where T : struct, ITag
+        => GetTagSet<T>().Has(entity);
+
+    public bool HasAnyTag(Entity entity, ReadOnlySpan<int> tagIds)
     {
-        return _tags.TryGetValue(typeof(T), out var set)
-               && ((SparseSet<T>)set).Has(entity);
-    }
-    
-    public bool HasTags(Entity entity, params Type[] tagTypes)
-    {
-        return tagTypes.All(tagType => HasTag(entity, tagType));
-    }
-    
-    public bool HasAnyTag(Entity entity, params Type[] tagTypes)
-    {
-        return tagTypes.Any(tagType => HasTag(entity, tagType));
-    }
-    
-    public bool HasAllTags(Entity entity, params Type[] tagTypes)
-    {
-        return tagTypes.All(tagType => HasTag(entity, tagType));
+        foreach (var t in tagIds)
+            if (_tags[t].Has(entity))
+                return true;
+
+        return false;
     }
 
-    private SparseSet<T> GetOrCreateTagSet<T>() where T : struct, ITag
+    public bool HasAllTags(Entity entity, ReadOnlySpan<int> tagIds)
     {
-        if (_tags.TryGetValue(typeof(T), out var obj))
-            return (SparseSet<T>)obj;
+        foreach (var t in tagIds)
+            if (!_tags[t].Has(entity))
+                return false;
 
-        var set = new SparseSet<T>();
-        _tags[typeof(T)] = set;
-        
-        return set;
+        return true;
+    }
+
+    private SparseSet<T> GetTagSet<T>() where T : struct, ITag
+    {
+        var id = TagTypeId<T>.Id;
+
+        if (_tags.TryGetValue(id, out var set))
+            return (SparseSet<T>)set;
+
+        var created = new SparseSet<T>();
+        _tags[id] = created;
+
+        return created;
     }
 }

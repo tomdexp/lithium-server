@@ -3,6 +3,8 @@ namespace Lithium.Core.ECS;
 public readonly struct ArchetypeKey : IEquatable<ArchetypeKey>
 {
     private readonly int _hash;
+    
+    public static readonly ArchetypeKey Empty = new();
 
     public ArchetypeKey(ReadOnlySpan<Type> types)
     {
@@ -11,7 +13,18 @@ public readonly struct ArchetypeKey : IEquatable<ArchetypeKey>
             var hash = 17;
 
             foreach (var t in types)
-                hash *= 31 + t.GetHashCode();
+            {
+                int typeId;
+                
+                if (typeof(IComponent).IsAssignableFrom(t))
+                    typeId = ComponentTypeId.GetId(t);
+                else if (typeof(ITag).IsAssignableFrom(t))
+                    typeId = TagTypeId.GetId(t);
+                else
+                    throw new ArgumentException($"Type {t.FullName} is not a component or tag");
+
+                hash = hash * 31 + typeId;
+            }
 
             _hash = hash;
         }

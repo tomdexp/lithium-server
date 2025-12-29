@@ -4,7 +4,7 @@ public readonly record struct Entity(World World, EntityId Id)
 {
     public void AddTag<T>() where T : struct, ITag
     {
-        World.AddTag(this, default(T));
+        World.AddTag<T>(this);
     }
     
     public void RemoveTag<T>() where T : struct, ITag
@@ -12,29 +12,19 @@ public readonly record struct Entity(World World, EntityId Id)
         World.RemoveTag<T>(this);
     }
     
-    public bool HasTag(Type tagType)
-    {
-        return World.HasTag(this, tagType);
-    }
-    
     public bool HasTag<T>() where T : struct, ITag
     {
         return World.HasTag<T>(this);
     }
     
-    public bool HasTags(params Type[] tagTypes)
+    public bool HasAnyTag(ReadOnlySpan<int> tagIds)
     {
-        return World.HasTags(this, tagTypes);
+        return World.HasAnyTag(this, tagIds);
     }
     
-    public bool HasAnyTag(params Type[] tagTypes)
+    public bool HasAllTags(ReadOnlySpan<int> tagIds)
     {
-        return World.HasAnyTag(this, tagTypes);
-    }
-    
-    public bool HasAllTags(params Type[] tagTypes)
-    {
-        return World.HasAllTags(this, tagTypes);
+        return World.HasAllTags(this, tagIds);
     }
 
     public void AddComponent<T>(T component) where T : struct, IComponent
