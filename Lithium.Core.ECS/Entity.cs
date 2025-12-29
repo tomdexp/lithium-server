@@ -3,7 +3,7 @@ namespace Lithium.Core.ECS;
 public readonly record struct Entity(World World)
 {
     public EntityId Id { get; init; }
-    
+
     public void AddComponent<T>(T component) where T : struct, IComponent
     {
         World.AddComponent(this, component);

@@ -2,8 +2,8 @@ namespace Lithium.Core.ECS;
 
 public partial class World
 {
-    private readonly Dictionary<ArchetypeKey, Archetype> _archetypes = new();
     private readonly Dictionary<EntityId, Archetype> _entityArchetype = new();
+    private uint _nextEntityId;
 
     public Entity CreateEntity()
     {
