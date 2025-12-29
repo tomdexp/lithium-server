@@ -20,6 +20,19 @@ public partial class World
             ((SparseSet<T>)set).Remove(entity);
     }
 
+    private bool HasAnyTag(Entity entity, Func<ITag, bool> filter)
+    {
+        foreach (var (tagType, set) in _tags)
+        {
+            if (!set.Has(entity)) continue;
+            
+            if (Activator.CreateInstance(tagType) is ITag tagInstance && filter(tagInstance))
+                return true;
+        }
+
+        return false;
+    }
+
     private SparseSet<T> GetOrCreateTagSet<T>() where T : struct, ITag
     {
         if (_tags.TryGetValue(typeof(T), out var obj))
