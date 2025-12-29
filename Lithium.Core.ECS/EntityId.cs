@@ -2,8 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace Lithium.Core.ECS;
 
-[Serializable]
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public readonly record struct EntityId
 {
     private readonly uint _id;
