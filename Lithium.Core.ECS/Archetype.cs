@@ -1,11 +1,15 @@
+using System.Runtime.CompilerServices;
+
 namespace Lithium.Core.ECS;
 
 public sealed class Archetype(int capacity = 16)
 {
     private Entity[] _entities = new Entity[capacity];
     public int Count { get; private set; }
-    
-    public HashSet<Type> ComponentTypes { get; } = [];
+
+    private Type[] _componentTypes = [];
+    public ReadOnlySpan<Type> ComponentTypes => _componentTypes.AsSpan(0, _componentCount);
+    private int _componentCount;
 
     public void Add(Entity entity)
     {
@@ -31,22 +35,52 @@ public sealed class Archetype(int capacity = 16)
 
         return false;
     }
-    
+
     public ArchetypeKey GetKeyWith(Type type)
     {
-        var types = new List<Type>(ComponentTypes) { type };
-        types.Sort((a, b) => string.Compare(a.FullName, b.FullName, StringComparison.Ordinal));
+        var newTypes = new Type[_componentCount + 1];
         
-        return new ArchetypeKey(types.ToArray());
+        Array.Copy(_componentTypes, newTypes, _componentCount);
+        newTypes[_componentCount] = type;
+        SortTypesById(newTypes);
+        
+        return new ArchetypeKey(newTypes);
     }
 
     public ArchetypeKey GetKeyWithout(Type type)
     {
-        var types = new List<Type>(ComponentTypes);
-        types.Remove(type);
-        types.Sort((a, b) => string.Compare(a.FullName, b.FullName, StringComparison.Ordinal));
+        var newTypes = new Type[_componentCount];
+        var idx = 0;
         
-        return new ArchetypeKey(types.ToArray());
+        for (var i = 0; i < _componentCount; i++)
+        {
+            if (_componentTypes[i] != type)
+                newTypes[idx++] = _componentTypes[i];
+        }
+
+        if (idx != newTypes.Length)
+            Array.Resize(ref newTypes, idx);
+
+        SortTypesById(newTypes);
+        return new ArchetypeKey(newTypes);
+    }
+
+    public void AddComponentType(Type type)
+    {
+        if (_componentTypes.Length == _componentCount)
+            Array.Resize(ref _componentTypes, Math.Max(4, _componentCount * 2));
+
+        _componentTypes[_componentCount++] = type;
+        SortTypesById(_componentTypes, _componentCount);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void SortTypesById(Type[] types, int length = -1)
+    {
+        if (length < 0) length = types.Length;
+        
+        Array.Sort(types, 0, length,
+            Comparer<Type>.Create((a, b) => ComponentTypeId.GetId(a) - ComponentTypeId.GetId(b)));
     }
 
     public ref Entity this[int index] => ref _entities[index];

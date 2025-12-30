@@ -15,4 +15,9 @@ internal static class TagTypeRegistry
         
         return id;
     }
+    
+    public static string GetName(int id)
+    {
+        return Map.FirstOrDefault(x => x.Value == id).Key.Name;
+    }
 }

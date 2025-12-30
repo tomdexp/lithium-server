@@ -31,9 +31,9 @@ public partial class World
             newArchetype = new Archetype();
 
             foreach (var type in oldArchetype.ComponentTypes)
-                newArchetype.ComponentTypes.Add(type);
+                newArchetype.AddComponentType(type);
 
-            newArchetype.ComponentTypes.Add(typeof(T)); 
+            newArchetype.AddComponentType(typeof(T)); 
             
             _archetypes[newKey] = newArchetype;
         }

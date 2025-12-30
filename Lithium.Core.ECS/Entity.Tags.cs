@@ -26,4 +26,9 @@ public partial record struct Entity
     {
         return World.HasAllTags(this, tagIds);
     }
+    
+    public ReadOnlySpan<int> GetTags()
+    {
+        return World.GetTags(this);
+    }
 }

@@ -6,6 +6,11 @@ public static class TagTypeId
     {
         return TagTypeRegistry.Register(type);
     }
+    
+    public static string GetName(int id)
+    {
+        return TagTypeRegistry.GetName(id);
+    }
 }
 
 public static class TagTypeId<T> where T : struct, ITag

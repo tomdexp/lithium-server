@@ -30,6 +30,17 @@ public partial class World
 
         return true;
     }
+    
+    public ReadOnlySpan<int> GetTags(Entity entity)
+    {
+        var tags = new List<int>();
+        
+        foreach (var t in _tags)
+            if (t.Value.Has(entity))
+                tags.Add(t.Key);
+        
+        return tags.ToArray();
+    }
 
     private SparseSet<T> GetTagSet<T>() where T : struct, ITag
     {
