@@ -22,9 +22,19 @@ public partial record struct Entity
         return World.HasAnyTag(this, tagIds);
     }
     
+    public bool HasAnyTag(params Type[] types)
+    {
+        return World.HasAnyTag(this, TagTypeId.GetIds(types));
+    }
+    
     public bool HasAllTags(ReadOnlySpan<int> tagIds)
     {
         return World.HasAllTags(this, tagIds);
+    }
+    
+    public bool HasAllTags(params Type[] types)
+    {
+        return World.HasAllTags(this, TagTypeId.GetIds(types));
     }
     
     public ReadOnlySpan<int> GetTags()

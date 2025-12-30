@@ -7,6 +7,11 @@ public static class TagTypeId
         return TagTypeRegistry.Register(type);
     }
     
+    public static ReadOnlySpan<int> GetIds(params Type[] types)
+    {
+        return TagTypeRegistry.Register(types);
+    }
+
     public static string GetName(int id)
     {
         return TagTypeRegistry.GetName(id);

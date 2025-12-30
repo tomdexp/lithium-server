@@ -1,8 +1,6 @@
 ﻿using System.Text.Json;
 using Lithium.Server.Core;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-
 namespace Lithium.Server;
 
 public interface IServerConfigurationProvider

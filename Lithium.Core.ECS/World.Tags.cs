@@ -13,22 +13,26 @@ public partial class World
     public bool HasTag<T>(Entity entity) where T : struct, ITag
         => GetTagSet<T>().Has(entity);
 
-    public bool HasAnyTag(Entity entity, ReadOnlySpan<int> tagIds)
-    {
-        foreach (var t in tagIds)
-            if (_tags[t].Has(entity))
-                return true;
-
-        return false;
-    }
-
     public bool HasAllTags(Entity entity, ReadOnlySpan<int> tagIds)
     {
         foreach (var t in tagIds)
-            if (!_tags[t].Has(entity))
+        {
+            if (!_tags.TryGetValue(t, out var set) || !set.Has(entity))
                 return false;
+        }
 
         return true;
+    }
+
+    public bool HasAnyTag(Entity entity, ReadOnlySpan<int> tagIds)
+    {
+        foreach (var t in tagIds)
+        {
+            if (_tags.TryGetValue(t, out var set) && set.Has(entity))
+                return true;
+        }
+
+        return false;
     }
     
     public ReadOnlySpan<int> GetTags(Entity entity)

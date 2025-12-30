@@ -23,7 +23,7 @@ public class Game
         cat.AddComponent(new Position(100, 100, 100));
         cat.AddComponent(new Rotation(100, 100, 100));
 
-        foreach (var e in World.Query<Position, Velocity>().HasTag<DogTag>())
+        foreach (var e in World.Query<Position, Velocity>().WithTag<DogTag>())
         {
             ref readonly var entity = ref e.Entity;
             ref readonly var pos = ref e.Component1;
@@ -34,7 +34,7 @@ public class Game
 
         var queries = World
             .Query<Position, Rotation>()
-            .HasTag<DogTag>();
+            .WithTag<DogTag>();
 
         foreach (var (entity, pos, rot) in queries)
         {

@@ -23,26 +23,28 @@ public sealed class TestService(ILogger<TestService> logger) : IHostedService
         cat.AddComponent(new Position(100, 100, 100));
         cat.AddComponent(new Velocity(1, 1, 1));
 
-        foreach (var e in world.Query<Position, Velocity>())
+        foreach (var e in world.Query<Position, Velocity>()
+                     .WithTag<DogTag>())
         {
             ref readonly var entity = ref e.Entity;
             ref var pos = ref e.Component1;
             ref var vel = ref e.Component2;
-        
+
             pos.X += vel.X * 0.1f;
             pos.Y += vel.Y * 0.1f;
             pos.Z += vel.Z * 0.1f;
-        
-            logger.LogInformation($"{entity}: {pos} / {vel}");
+
+            logger.LogInformation(
+                $"{entity}({string.Join(", ", entity.GetTags().ToArray().Select(TagTypeId.GetName))}) : {pos} / {vel}");
         }
 
-        foreach (var (entity, pos, vel) in world.Query<Position, Velocity>())
-        {
-            var newPos = new Position(pos.X + vel.X * 0.1f, pos.Y + vel.Y * 0.1f, pos.Z + vel.Z * 0.1f);
-            entity.AddComponent(newPos);
-
-            logger.LogInformation($"{entity}: {newPos} / {vel}");
-        }
+        // foreach (var (entity, pos, vel) in world.Query<Position, Velocity>())
+        // {
+        //     var newPos = new Position(pos.X + vel.X * 0.1f, pos.Y + vel.Y * 0.1f, pos.Z + vel.Z * 0.1f);
+        //     entity.AddComponent(newPos);
+        //
+        //     logger.LogInformation($"{entity}: {newPos} / {vel}");
+        // }
 
         return Task.CompletedTask;
     }
