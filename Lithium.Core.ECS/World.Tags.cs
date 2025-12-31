@@ -5,7 +5,7 @@ namespace Lithium.Core.ECS;
 public partial class World
 {
     private ISparseSet[] _tagSets = new ISparseSet[32];
-    private readonly Tags[] _entityTags = new Tags[32];
+    private Tags[] _entityTags = new Tags[32];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddTag<T>(Entity entity) where T : struct, ITag
@@ -13,7 +13,10 @@ public partial class World
         var id = TagTypeId<T>.Id;
 
         if (id >= _tagSets.Length)
+        {
             Array.Resize(ref _tagSets, id * 2);
+            Array.Resize(ref _entityTags, id * 2);
+        }
 
         ((SparseSet<T>)_tagSets[id]).Add(entity, default);
 

@@ -14,7 +14,7 @@ public struct Tags : IEnumerable<Tag>, IEquatable<Tags>
     public Tag this[int index] => Get(index);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Tag Get(int index)
+    private Tag Get(int index)
     {
         if (index < 0 || index >= Count)
             throw new IndexOutOfRangeException();
