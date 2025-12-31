@@ -14,12 +14,18 @@ public partial class World
 
         if (id >= _tagSets.Length)
         {
-            Array.Resize(ref _tagSets, id * 2);
-            Array.Resize(ref _entityTags, id * 2);
+            var newSize = Math.Max(id + 1, _tagSets.Length * 2);
+
+            Array.Resize(ref _tagSets, newSize);
+            Array.Resize(ref _entityTags, newSize);
         }
+        
+        _tagSets[id] ??= new SparseSet<T>();
 
+        if (_entityTags[entity.Id].Equals(default))
+            _entityTags[entity.Id] = new Tags();
+        
         ((SparseSet<T>)_tagSets[id]).Add(entity, default);
-
         _entityTags[entity.Id].Add(id);
     }
 
