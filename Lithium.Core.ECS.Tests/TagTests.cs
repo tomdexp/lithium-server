@@ -115,7 +115,7 @@ public class TagTests
         var nameSpan = tag.GetNameAsSpan();
 
         // Assert
-        Assert.Equal(nameof(DogTag), nameSpan.ToString());
+        Assert.Equal(nameof(DogTag), nameSpan);
     }
 
     [Fact]
