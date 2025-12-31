@@ -2,6 +2,16 @@ namespace Lithium.Core.ECS.Tests;
 
 public class TagsTests
 {
+    #region Test Tags
+
+    private struct TestTag1 : ITag;
+
+    private struct TestTag2 : ITag;
+
+    private struct TestTag3 : ITag;
+
+    #endregion
+
     #region Constructor Tests
 
     [Fact]
@@ -21,20 +31,51 @@ public class TagsTests
     [Fact]
     public void Add_WhenAddingNewTag_ShouldContainTag()
     {
+        // Arrange
         var tags = new Tags();
-        
+
         // Act
         tags.Add<DogTag>();
 
         // Assert
         Assert.True(tags.Has<DogTag>());
+        Assert.Equal(1, tags.Count);
+    }
+
+    [Fact]
+    public void Add_WithMultipleTags_ShouldUpdateCountCorrectly()
+    {
+        // Arrange
+        var tags = new Tags();
+
+        // Act
+        tags.Add<DogTag>();
+        tags.Add<CatTag>();
+        tags.Add<TestTag1>();
+
+        // Assert
+        Assert.Equal(3, tags.Count);
+    }
+
+    [Fact]
+    public void Add_WithIntId_ShouldAddTag()
+    {
+        // Arrange
+        var tags = new Tags();
+        var tagId = TagTypeId<DogTag>.Id;
+
+        // Act
+        tags.Add(tagId);
+
+        // Assert
+        Assert.True(tags.Has(tagId));
     }
 
     [Fact]
     public void Add_WhenAddingDuplicateTag_ShouldNotAddDuplicate()
     {
         var tags = new Tags();
-        
+
         // Arrange
         tags.Add<DogTag>();
         var initialCount = tags.Count;
@@ -49,16 +90,46 @@ public class TagsTests
     [Fact]
     public void Remove_WhenTagExists_ShouldRemoveTag()
     {
-        var tags = new Tags();
-        
         // Arrange
+        var tags = new Tags();
         tags.Add<DogTag>();
-        
+
         // Act
         tags.Remove<DogTag>();
 
         // Assert
         Assert.False(tags.Has<DogTag>());
+        Assert.Equal(0, tags.Count);
+    }
+
+    [Fact]
+    public void Remove_WhenTagDoesNotExist_ShouldNotAffectCount()
+    {
+        // Arrange
+        var tags = new Tags();
+        tags.Add<DogTag>();
+        var initialCount = tags.Count;
+
+        // Act
+        tags.Remove<CatTag>();
+
+        // Assert
+        Assert.Equal(initialCount, tags.Count);
+    }
+
+    [Fact]
+    public void Remove_WithIntId_ShouldRemoveTag()
+    {
+        // Arrange
+        var tags = new Tags();
+        var tagId = TagTypeId<DogTag>.Id;
+        tags.Add(tagId);
+
+        // Act
+        tags.Remove(tagId);
+
+        // Assert
+        Assert.False(tags.Has(tagId));
     }
 
     #endregion
@@ -69,7 +140,7 @@ public class TagsTests
     public void Has_WithSingleTag_WhenTagExists_ShouldReturnTrue()
     {
         var tags = new Tags();
-        
+
         // Arrange
         tags.Add<DogTag>();
 
@@ -81,7 +152,7 @@ public class TagsTests
     public void Has_WithMultipleTags_WhenAllTagsExist_ShouldReturnTrue()
     {
         var tags = new Tags();
-        
+
         // Arrange
         tags.Add<DogTag>();
         tags.Add<CatTag>();
@@ -94,7 +165,7 @@ public class TagsTests
     public void Has_WithMultipleTags_WhenNotAllTagsExist_ShouldReturnFalse()
     {
         var tags = new Tags();
-        
+
         // Arrange
         tags.Add<DogTag>();
 
@@ -110,11 +181,11 @@ public class TagsTests
     public void Contains_WithTags_WhenAllTagsExist_ShouldReturnTrue()
     {
         var tags = new Tags();
-        
+
         // Arrange
         tags.Add<DogTag>();
         tags.Add<CatTag>();
-        
+
         var otherTags = new Tags();
         otherTags.Add<DogTag>();
 
@@ -130,10 +201,10 @@ public class TagsTests
     public void HasAny_WithTags_WhenAnyTagExists_ShouldReturnTrue()
     {
         var tags = new Tags();
-        
+
         // Arrange
         tags.Add<DogTag>();
-        
+
         var otherTags = new Tags();
         otherTags.Add<DogTag>();
         otherTags.Add<CatTag>();
@@ -150,7 +221,7 @@ public class TagsTests
     public void Get_WithSingleTag_ShouldReturnTag()
     {
         var tags = new Tags();
-        
+
         // Arrange
         tags.Add<DogTag>();
 
@@ -165,7 +236,7 @@ public class TagsTests
     public void Get_WithMultipleTags_ShouldReturnAllTags()
     {
         var tags = new Tags();
-        
+
         // Arrange
         tags.Add<DogTag>();
         tags.Add<CatTag>();
@@ -186,7 +257,7 @@ public class TagsTests
     public void Indexer_WhenIndexInRange_ShouldReturnTag()
     {
         var tags = new Tags();
-        
+
         // Arrange
         tags.Add<DogTag>();
         tags.Add<CatTag>();
@@ -200,7 +271,7 @@ public class TagsTests
     public void Indexer_WhenIndexOutOfRange_ShouldThrow()
     {
         var tags = new Tags();
-        
+
         // Arrange
         tags.Add<DogTag>();
 
@@ -216,11 +287,11 @@ public class TagsTests
     public void GetEnumerator_ShouldEnumerateAllTags()
     {
         var tags = new Tags();
-        
+
         // Arrange
         tags.Add<DogTag>();
         tags.Add<CatTag>();
-        
+
         var expectedIds = new HashSet<int> { TagTypeId<DogTag>.Id, TagTypeId<CatTag>.Id };
         var actualIds = new HashSet<int>();
 
@@ -242,13 +313,13 @@ public class TagsTests
     public void AsSpan_ShouldReturnTagsAsSpan()
     {
         var tags = new Tags();
-        
+
         // Arrange
         tags.Add<DogTag>();
         tags.Add<CatTag>();
-        
+
         Span<int> buffer = stackalloc int[TagBitset.BitsPerBlock];
-        
+
         var count = tags.AsSpan(buffer);
         var ids = buffer[..count].ToArray();
 
