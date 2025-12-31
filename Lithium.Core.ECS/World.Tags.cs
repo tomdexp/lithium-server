@@ -4,34 +4,44 @@ namespace Lithium.Core.ECS;
 
 public partial class World
 {
-    // index = TagTypeId
     private ISparseSet[] _tagSets = new ISparseSet[32];
+    private readonly Tags[] _entityTags = new Tags[32];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AddTag<T>(Entity entity)
-        where T : struct, ITag
-        => GetOrCreateTagSet<T>().Add(entity, default);
+    public void AddTag<T>(Entity entity) where T : struct, ITag
+    {
+        var id = TagTypeId<T>.Id;
+
+        if (id >= _tagSets.Length)
+            Array.Resize(ref _tagSets, id * 2);
+
+        ((SparseSet<T>)_tagSets[id]).Add(entity, default);
+
+        _entityTags[entity.Id].Add(id);
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void RemoveTag<T>(Entity entity)
-        where T : struct, ITag
-        => GetTagSet<T>()?.Remove(entity);
+    public void RemoveTag<T>(Entity entity) where T : struct, ITag
+    {
+        var id = TagTypeId<T>.Id;
+        if (id >= _tagSets.Length) return;
+
+        ((SparseSet<T>)_tagSets[id]).Remove(entity);
+        _entityTags[entity.Id].Remove(id);
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool HasTag<T>(Entity entity)
-        where T : struct, ITag
-        => GetTagSet<T>()?.Has(entity) ?? false;
+    public bool HasTag<T>(Entity entity) where T : struct, ITag
+    {
+        return _entityTags[entity.Id].Has(TagTypeId<T>.Id);
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool HasAllTags(Entity entity, ReadOnlySpan<int> tagIds)
     {
         foreach (var id in tagIds)
-        {
-            var set = id < _tagSets.Length ? _tagSets[id] : null;
-            
-            if (set is null || !set.Has(entity))
+            if (!_entityTags[entity.Id].Has(id))
                 return false;
-        }
 
         return true;
     }
@@ -40,59 +50,19 @@ public partial class World
     public bool HasAnyTag(Entity entity, ReadOnlySpan<int> tagIds)
     {
         foreach (var id in tagIds)
-        {
-            var set = id < _tagSets.Length ? _tagSets[id] : null;
-            
-            if (set is not null && set.Has(entity))
+            if (_entityTags[entity.Id].Has(id))
                 return true;
-        }
 
         return false;
     }
 
-    public int[] GetTags(Entity entity)
-    {
-        var count = 0;
-
-        for (var i = 0; i < _tagSets.Length; i++)
-            if (_tagSets[i]?.Has(entity) == true)
-                count++;
-
-        if (count == 0)
-            return [];
-
-        var result = new int[count];
-        var idx = 0;
-
-        for (var i = 0; i < _tagSets.Length; i++)
-            if (_tagSets[i]?.Has(entity) == true)
-                result[idx++] = i;
-
-        return result;
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Tags GetTags(Entity entity) => _entityTags[entity.Id];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private SparseSet<T>? GetTagSet<T>() where T : struct, ITag
+    public ReadOnlySpan<EntityId> GetEntitiesWithTag<T>() where T : struct, ITag
     {
         var id = TagTypeId<T>.Id;
-        return id < _tagSets.Length ? (SparseSet<T>?)_tagSets[id] : null;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private SparseSet<T> GetOrCreateTagSet<T>() where T : struct, ITag
-    {
-        var id = TagTypeId<T>.Id;
-
-        if (id >= _tagSets.Length)
-            Array.Resize(ref _tagSets, id * 2);
-
-        var set = _tagSets[id];
-
-        if (set is not null)
-            return (SparseSet<T>)set;
-
-        var created = new SparseSet<T>();
-        _tagSets[id] = created;
-        return created;
+        return _tagSets[id].Entities;
     }
 }

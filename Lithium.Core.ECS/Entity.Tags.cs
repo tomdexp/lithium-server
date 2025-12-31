@@ -24,5 +24,6 @@ public partial record struct Entity
     public bool HasAllTags(ReadOnlySpan<int> tagIds)
         => World.HasAllTags(this, tagIds);
 
-    public int[] GetTags() => World.GetTags(this);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Tags GetTags() => World.GetTags(this);
 }

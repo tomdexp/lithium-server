@@ -1,130 +1,233 @@
 using System.Collections;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace Lithium.Core.ECS;
 
 public struct Tags : IEnumerable<Tag>, IEquatable<Tags>
 {
-    private int[] _tags;
+    private TagBitset _bitset;
     public int Count { get; private set; }
 
     public static Tags Empty => default;
 
-    public Tags()
-    {
-        _tags = new int[4];
-        Count = 0;
-    }
+    public Tag this[int index] => Get(index);
 
-    public Tags(ReadOnlySpan<int> tags)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Tag Get(int index)
     {
-        _tags = new int[Math.Max(4, tags.Length)];
-        Count = 0;
+        if (index < 0 || index >= Count)
+            throw new IndexOutOfRangeException();
 
-        foreach (var t in tags)
-            Add(t);
-    }
+        var found = 0;
 
-    public int this[int index]
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _tags[index];
+        for (var blk = 0; blk < TagBitset.ULongsPerBlock; blk++)
+        {
+            var block = _bitset.Data[blk];
+
+            while (block != 0)
+            {
+                var bit = BitOperations.TrailingZeroCount(block);
+
+                if (found == index)
+                    return new Tag(blk * TagBitset.BitsPerUlong + bit);
+
+                block &= block - 1;
+                found++;
+            }
+        }
+
+        throw new IndexOutOfRangeException();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add(int tagId)
+    public Tag Get<T1>() where T1 : struct, ITag
     {
-        for (var i = 0; i < Count; i++)
-            if (_tags[i] == tagId)
-                return;
-
-        if (Count == _tags.Length)
-            Grow();
-
-        _tags[Count++] = tagId;
+        var id = TagTypeId<T1>.Id;
+        return _bitset.Has(id) ? new Tag(id) : throw new KeyNotFoundException();
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public (Tag, Tag) Get<T1, T2>() where T1 : struct, ITag where T2 : struct, ITag
+    {
+        var id1 = TagTypeId<T1>.Id;
+        var id2 = TagTypeId<T2>.Id;
+        
+        return _bitset.Has(id1) & _bitset.Has(id2) ? (new Tag(id1), new Tag(id2)) : throw new KeyNotFoundException();
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public (Tag, Tag, Tag) Get<T1, T2, T3>() where T1 : struct, ITag where T2 : struct, ITag where T3 : struct, ITag
+    {
+        var id1 = TagTypeId<T1>.Id;
+        var id2 = TagTypeId<T2>.Id;
+        var id3 = TagTypeId<T3>.Id;
+        
+        return _bitset.Has(id1) & _bitset.Has(id2) & _bitset.Has(id3) ? (new Tag(id1), new Tag(id2), new Tag(id3)) : throw new KeyNotFoundException();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Add(int id)
+    {
+        if (_bitset.Has(id)) return;
+        _bitset.Add(id);
+
+        Count++;
+    }
+    
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add<T>() where T : struct, ITag
-        => Add(TagTypeId<T>.Id);
+    {
+        var id = TagTypeId<T>.Id;
 
+        if (_bitset.Has(id)) return;
+        _bitset.Add(id);
+
+        Count++;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Remove(int id)
+    {
+        if (!_bitset.Has(id)) return;
+        _bitset.Remove(id);
+
+        Count--;
+    }
+    
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Remove<T>() where T : struct, ITag
     {
         var id = TagTypeId<T>.Id;
 
-        for (var i = 0; i < Count; i++)
-        {
-            if (_tags[i] != id) continue;
-            _tags[i] = _tags[--Count];
+        if (!_bitset.Has(id)) return;
+        _bitset.Remove(id);
 
-            return;
-        }
+        Count--;
     }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void Grow()
-    {
-        Array.Resize(ref _tags, _tags.Length * 2);
-    }
-
+   
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Has(int id)
+    public bool Has(int tagId)
     {
-        for (var i = 0; i < Count; i++)
-            if (_tags[i] == id)
-                return true;
-
-        return false;
+        return _bitset.Has(tagId);
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool Has(in Tags other)
+    {
+        return _bitset.HasAll(other._bitset);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has<T>() where T : struct, ITag
-        => Has(TagTypeId<T>.Id);
+    {
+        return _bitset.Has(TagTypeId<T>.Id);
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has<T1, T2>()
         where T1 : struct, ITag
         where T2 : struct, ITag
-        => Has<T1>() & Has<T2>();
+    {
+        return Has<T1>() & Has<T2>();
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has<T1, T2, T3>()
         where T1 : struct, ITag
         where T2 : struct, ITag
         where T3 : struct, ITag
-        => Has<T1>() & Has<T2>() & Has<T3>();
+    {
+        return Has<T1>() & Has<T2>() & Has<T3>();
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool HasAll(in Tags other)
+    {
+        return _bitset.HasAll(other._bitset);
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool HasAny(in Tags other)
+    {
+        return _bitset.HasAny(other._bitset);
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadOnlySpan<int> AsSpan()
-        => _tags.AsSpan(0, Count);
+    public int AsSpan(Span<int> destination)
+    {
+        var count = 0;
 
-    public Enumerator GetEnumerator()
-        => new(_tags, Count);
+        for (var i = 0; i < TagBitset.ULongsPerBlock; i++)
+        {
+            var block = _bitset.Data[i];
 
-    IEnumerator<Tag> IEnumerable<Tag>.GetEnumerator()
-        => GetEnumerator();
+            while (block != 0)
+            {
+                var bit = BitOperations.TrailingZeroCount(block);
 
-    IEnumerator IEnumerable.GetEnumerator()
-        => GetEnumerator();
+                if (count >= destination.Length)
+                    throw new ArgumentException("Destination span is too small", nameof(destination));
+
+                destination[count++] = i * TagBitset.BitsPerUlong + bit;
+                block &= block - 1;
+            }
+        }
+
+        return count;
+    }
+
+    public Enumerator GetEnumerator() => new(ref _bitset, Count);
+    IEnumerator<Tag> IEnumerable<Tag>.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     public struct Enumerator : IEnumerator<Tag>
     {
-        private readonly int[] _tags;
+        private readonly TagBitset _bitset;
         private readonly int _count;
         private int _index;
+        private int _current;
 
-        internal Enumerator(int[] tags, int count)
+        internal Enumerator(ref TagBitset bitset, int count)
         {
-            _tags = tags;
+            _bitset = bitset;
             _count = count;
             _index = -1;
+            _current = -1;
         }
 
-        public Tag Current => new(_tags[_index]);
+        public Tag Current => new(_current);
         object IEnumerator.Current => Current;
 
-        public bool MoveNext() => ++_index < _count;
+        public bool MoveNext()
+        {
+            _index++;
+            if (_index >= _count) return false;
+
+            var found = 0;
+
+            for (var blk = 0; blk < TagBitset.ULongsPerBlock; blk++)
+            {
+                var block = _bitset.Data[blk];
+
+                while (block != 0)
+                {
+                    var bit = BitOperations.TrailingZeroCount(block);
+
+                    if (found == _index)
+                    {
+                        _current = blk * TagBitset.BitsPerUlong + bit;
+                        return true;
+                    }
+
+                    block &= block - 1;
+                    found++;
+                }
+            }
+
+            return false;
+        }
+
         public void Reset() => _index = -1;
 
         public void Dispose()
@@ -132,28 +235,10 @@ public struct Tags : IEnumerable<Tag>, IEquatable<Tags>
         }
     }
 
-    public bool Equals(Tags other)
-    {
-        return _tags.Equals(other._tags) && Count == other.Count;
-    }
+    public bool Equals(Tags other) => _bitset.Equals(other._bitset) && Count == other.Count;
+    public override bool Equals(object? obj) => obj is Tags other && Equals(other);
+    public override int GetHashCode() => HashCode.Combine(_bitset, Count);
 
-    public override bool Equals(object? obj)
-    {
-        return obj is Tags other && Equals(other);
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_tags, Count);
-    }
-
-    public static bool operator ==(Tags left, Tags right)
-    {
-        return left.Equals(right);
-    }
-
-    public static bool operator !=(Tags left, Tags right)
-    {
-        return !(left == right);
-    }
+    public static bool operator ==(Tags left, Tags right) => left.Equals(right);
+    public static bool operator !=(Tags left, Tags right) => !(left == right);
 }

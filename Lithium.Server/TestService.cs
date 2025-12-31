@@ -35,7 +35,13 @@ public sealed class TestService(ILogger<TestService> logger) : IHostedService
             pos.Z += vel.Z * 0.1f;
 
             logger.LogInformation(
-                $"{entity}({string.Join(", ", entity.GetTags().ToArray().Select(TagTypeId.GetName))}) : {pos} / {vel}");
+                $"{entity}({
+                    string.Join(", ", entity.GetTags().Select(x => {
+                        var name = x.GetNameAsSpan();
+                        return name.ToString();
+                    }))
+                }) : {pos} / {vel}"
+            );
         }
 
         // foreach (var (entity, pos, vel) in world.Query<Position, Velocity>())

@@ -13,12 +13,12 @@ public static class TagTypeId
         => TagTypeId<T>.Id;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static string GetName(int id)
+    public static ReadOnlySpan<char> GetName(int id)
         => TagTypeRegistry.GetName(id);
-
+    
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Type GetType(int id)
-        => TagTypeRegistry.GetType(id);
+    public static string GetNameString(int id)
+        => TagTypeRegistry.GetName(id).ToString();
 }
 
 public static class TagTypeId<T> where T : struct, ITag

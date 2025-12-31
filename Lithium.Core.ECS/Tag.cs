@@ -11,6 +11,16 @@ public readonly struct Tag(int id) : IEquatable<Tag>
 {
     public readonly int Id = id;
 
+    public string Name => GetNameAsString();
+    
+    public static Tag New<T>() where T : struct, ITag
+    {
+        return new Tag(TagTypeId<T>.Id);
+    }
+    
+    public ReadOnlySpan<char> GetNameAsSpan() => TagTypeId.GetName(Id);
+    public string GetNameAsString() => TagTypeId.GetNameString(Id);
+    
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Equals(Tag other) => Id == other.Id;
 
@@ -21,8 +31,7 @@ public readonly struct Tag(int id) : IEquatable<Tag>
     
     public override int GetHashCode() => Id;
 
-    public override string ToString()
-        => TagTypeId.GetName(Id);
+    public override string ToString() => new(TagTypeId.GetName(Id));
     
     public static bool operator ==(Tag left, Tag right)
     {

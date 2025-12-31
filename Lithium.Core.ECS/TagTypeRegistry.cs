@@ -23,10 +23,6 @@ internal static class TagTypeRegistry
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Type GetType(int id)
-        => IdToType[id];
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static string GetName(int id)
+    public static ReadOnlySpan<char> GetName(int id)
         => IdToType[id].Name;
 }
