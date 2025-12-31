@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Lithium.Core.ECS;
 
-public struct Tags : IEnumerable<Tag>
+public struct Tags : IEnumerable<Tag>, IEquatable<Tags>
 {
     private int[] _tags;
     public int Count { get; private set; }
@@ -130,5 +130,30 @@ public struct Tags : IEnumerable<Tag>
         public void Dispose()
         {
         }
+    }
+
+    public bool Equals(Tags other)
+    {
+        return _tags.Equals(other._tags) && Count == other.Count;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is Tags other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(_tags, Count);
+    }
+
+    public static bool operator ==(Tags left, Tags right)
+    {
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(Tags left, Tags right)
+    {
+        return !(left == right);
     }
 }
