@@ -30,6 +30,8 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
+        <PackageReference Include="Sentry" Version="6.0.0" />
+        <PackageReference Include="Sentry.Extensions.Logging" Version="6.0.0" />
     </ItemGroup>
 
     <ItemGroup>

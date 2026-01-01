@@ -1,5 +1,3 @@
-using System.Numerics;
-
 namespace Lithium.Server.Core.Systems.Commands;
 
 public sealed class CoreCommands(
@@ -7,9 +5,16 @@ public sealed class CoreCommands(
     ConsoleCommandRegistry registry
 )
 {
+    [ConsoleCommand("sentry", "Sentry test")]
+    private void Sentry()
+    {
+        SentrySdk.CaptureMessage("Hello Sentry");
+    }
+    
     [ConsoleCommand("stop", "Stop the server")]
     private void Stop()
     {
+        // throw new Exception("Stop");
         lifetime.StopApplication();
     }
 

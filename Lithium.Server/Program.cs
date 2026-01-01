@@ -1,15 +1,46 @@
 ﻿using System.Reflection;
-using Lithium.Core.ECS;
 using Lithium.Server;
 using Lithium.Server.Core;
 using Lithium.Server.Core.Logging;
 using Lithium.Server.Core.Networking;
 using Lithium.Server.Core.Networking.Extensions;
 using Lithium.Server.Core.Systems.Commands;
-using Lithium.Server.Core.Systems.Commands.Parsers;
 using Lithium.Server.Dashboard;
+using Sentry.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
+
+SentrySdk.Init(options =>
+{
+    options.Dsn = builder.Configuration["Sentry:Dsn"];
+    options.Environment = builder.Configuration["Environment"];
+    options.AttachStacktrace = true;
+    options.SendDefaultPii = false;
+    options.AttachStacktrace = true;
+    options.SendDefaultPii = true;
+    options.Debug = true;
+    options.DiagnosticLevel = SentryLevel.Error;
+    options.TracesSampleRate = 1.0;
+});
+
+builder.Services.Configure<SentryLoggingOptions>(options =>
+{
+    options.Dsn = builder.Configuration["Sentry:Dsn"];
+    options.Environment = builder.Configuration["Environment"];
+    options.InitializeSdk = true;
+    options.AttachStacktrace = true;
+    options.SendDefaultPii = false;
+    options.AttachStacktrace = true;
+    options.SendDefaultPii = true;
+    options.MinimumBreadcrumbLevel = LogLevel.Debug;
+    options.MinimumEventLevel = LogLevel.Debug;
+    options.Debug = true;
+    options.DiagnosticLevel = SentryLevel.Error;
+    options.TracesSampleRate = 1.0;
+});
+
+builder.Logging.AddConfiguration(builder.Configuration);
+builder.Logging.AddSentry();
 
 builder.Logging.ClearProviders();
 

@@ -129,7 +129,7 @@ public sealed class QuicServer(
                         break;
                     }
                 }
-
+                
                 await hub.Clients.All.Heartbeat(ticks);
                 logger.LogInformation("Heartbeat sent to all clients");
             }
