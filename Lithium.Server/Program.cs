@@ -6,6 +6,7 @@ using Lithium.Server.Core.Logging;
 using Lithium.Server.Core.Networking;
 using Lithium.Server.Core.Networking.Extensions;
 using Lithium.Server.Dashboard;
+using Lithium.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,8 +41,11 @@ builder.Services.AddSingleton<QuicServer>();
 builder.Services.AddHostedService<ServerLifetime>();
 builder.Services.AddHostedService<WorldService>();
 
+// Console command service
+builder.Services.AddHostedService<ConsoleCommandService>();
+
 var app = builder.Build();
 
 app.MapHub<ServerHub>("/hub/admin");
 
-app.Run();
+await app.RunAsync();
