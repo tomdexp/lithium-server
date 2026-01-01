@@ -7,6 +7,7 @@ using Lithium.Server.Core.Networking.Extensions;
 using Lithium.Server.Core.Systems.Commands;
 using Lithium.Server.Dashboard;
 using Sentry.Extensions.Logging;
+using Sentry.Extensions.Logging.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,33 +15,17 @@ SentrySdk.Init(options =>
 {
     options.Dsn = builder.Configuration["Sentry:Dsn"];
     options.Environment = builder.Configuration["Environment"];
-    options.AttachStacktrace = true;
-    options.SendDefaultPii = false;
-    options.AttachStacktrace = true;
-    options.SendDefaultPii = true;
-    options.Debug = true;
-    options.DiagnosticLevel = SentryLevel.Error;
-    options.TracesSampleRate = 1.0;
-});
 
-builder.Services.Configure<SentryLoggingOptions>(options =>
-{
-    options.Dsn = builder.Configuration["Sentry:Dsn"];
-    options.Environment = builder.Configuration["Environment"];
-    options.InitializeSdk = true;
-    options.AttachStacktrace = true;
-    options.SendDefaultPii = false;
-    options.AttachStacktrace = true;
-    options.SendDefaultPii = true;
-    options.MinimumBreadcrumbLevel = LogLevel.Debug;
-    options.MinimumEventLevel = LogLevel.Debug;
-    options.Debug = true;
-    options.DiagnosticLevel = SentryLevel.Error;
-    options.TracesSampleRate = 1.0;
+    options.SetBeforeSendLog(static log =>
+    {
+        // Filter out all info logs
+        return log.Level switch
+        {
+            SentryLogLevel.Error or SentryLogLevel.Fatal => log,
+            _ => null
+        };
+    });
 });
-
-builder.Logging.AddConfiguration(builder.Configuration);
-builder.Logging.AddSentry();
 
 builder.Logging.ClearProviders();
 
@@ -50,6 +35,35 @@ builder.Logging.AddSimpleConsole(options =>
     options.TimestampFormat = "[HH:mm:ss] ";
     options.IncludeScopes = false;
 });
+
+builder.Services.Configure<SentryLoggingOptions>(options =>
+{
+    options.Dsn = builder.Configuration["Sentry:Dsn"];
+    options.Environment = builder.Configuration["Environment"];
+    options.InitializeSdk = true;
+
+    options.SetBeforeSendLog(static log =>
+    {
+        var a = log.TryGetAttribute("force_send", out var a1);
+
+        Console.WriteLine("BeforeSendLog: " + string.Join(", ", a, a1));
+
+        if (log.TryGetAttribute("force_send", out var v) && v.ToString() is "true")
+            return log;
+
+        // Filter out all info logs
+        return log.Level switch
+        {
+            SentryLogLevel.Error or SentryLogLevel.Fatal => log,
+            _ => null
+        };
+    });
+});
+
+builder.Services.AddSentry<SentryLoggingOptions>();
+
+builder.Logging.AddConfiguration(builder.Configuration);
+builder.Logging.AddSentry();
 
 builder.Logging.AddFilter("Microsoft", LogLevel.Warning);
 builder.Logging.AddFilter("System", LogLevel.Warning);
