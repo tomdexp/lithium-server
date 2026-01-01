@@ -1,19 +1,27 @@
+using System.Reflection;
+using Microsoft.Extensions.Options;
+
 namespace Lithium.Server.Core.Systems.Commands;
 
-public sealed class CommandParserInitializer(
-    CommandArgumentParserRegistry registry,
-    IServiceProvider services
-) : IHostedService
+public sealed class ConsoleCommandRegisterOptions
+{
+    public IEnumerable<Assembly> Assemblies { get; set; } = [];
+}
+
+public sealed class ConsoleCommandRegister(
+    CommandArgumentParserRegistry parserRegistry,
+    ConsoleCommandRegistry commandRegistry,
+    IOptions<ConsoleCommandRegisterOptions> options
+    ) : IHostedService
 {
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        using var scope = services.CreateScope();
-
-        var parsers = scope.ServiceProvider.GetServices<ICommandArgumentParser>();
+        foreach (var assembly in options.Value.Assemblies)
+        {
+            parserRegistry.RegisterAssembly(assembly);
+            commandRegistry.RegisterAssembly(assembly);
+        }
         
-        foreach (var parser in parsers)
-            registry.Register(parser);
-
         return Task.CompletedTask;
     }
 

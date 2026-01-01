@@ -9,13 +9,7 @@ public sealed class ConsoleCommandRegistry
 
     public IReadOnlyDictionary<string, ConsoleCommand> Commands => _commands;
 
-    public ConsoleCommandRegistry(IEnumerable<Assembly> assemblies)
-    {
-        foreach (var assembly in assemblies)
-            RegisterAssembly(assembly);
-    }
-
-    private void RegisterAssembly(Assembly assembly)
+    internal void RegisterAssembly(Assembly assembly)
     {
         foreach (var type in assembly.GetTypes())
         {

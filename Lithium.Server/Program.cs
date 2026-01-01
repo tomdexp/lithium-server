@@ -43,23 +43,7 @@ builder.Services.AddHostedService<ServerLifetime>();
 builder.Services.AddHostedService<WorldService>();
 
 // Console command service
-builder.Services.AddSingleton(
-    new ConsoleCommandRegistry([
-        typeof(Program).Assembly
-    ])
-);
-
-builder.Services.AddSingleton<CommandArgumentParserRegistry>();
-builder.Services.AddSingleton<CommandArgumentBinder>();
-builder.Services.AddSingleton<ConsoleCommandExecutor>();
-builder.Services.AddSingleton<CoreCommands>();
-
-builder.Services.AddSingleton<ICommandArgumentParser, StringParser>();
-builder.Services.AddSingleton<ICommandArgumentParser, BoolParser>();
-builder.Services.AddSingleton<ICommandArgumentParser, Vector3Parser>();
-
-builder.Services.AddHostedService<CommandParserInitializer>();
-builder.Services.AddHostedService<ConsoleInputService>();
+builder.Services.AddConsoleCommands();
 
 var app = builder.Build();
 
