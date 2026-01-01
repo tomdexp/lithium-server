@@ -1,4 +1,4 @@
-namespace Lithium.Server.Core.Commands;
+namespace Lithium.Server.Core.Systems.Commands;
 
 public sealed class ConsoleInputService(
     ILogger<ConsoleInputService> logger,

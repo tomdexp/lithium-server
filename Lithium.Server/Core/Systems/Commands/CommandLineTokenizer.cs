@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Lithium.Server.Core.Commands;
+namespace Lithium.Server.Core.Systems.Commands;
 
 internal static class CommandLineTokenizer
 {

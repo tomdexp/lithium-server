@@ -1,4 +1,4 @@
-namespace Lithium.Server.Core.Commands;
+namespace Lithium.Server.Core.Systems.Commands;
 
 [AttributeUsage(AttributeTargets.Method)]
 public sealed class ConsoleCommandAttribute(string name, string? description = null) : Attribute

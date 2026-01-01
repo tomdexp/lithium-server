@@ -2,10 +2,10 @@
 using Lithium.Core.ECS;
 using Lithium.Server;
 using Lithium.Server.Core;
-using Lithium.Server.Core.Commands;
 using Lithium.Server.Core.Logging;
 using Lithium.Server.Core.Networking;
 using Lithium.Server.Core.Networking.Extensions;
+using Lithium.Server.Core.Systems.Commands;
 using Lithium.Server.Dashboard;
 
 var builder = WebApplication.CreateBuilder(args);

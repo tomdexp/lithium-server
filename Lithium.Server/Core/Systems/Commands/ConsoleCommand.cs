@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Lithium.Server.Core.Commands;
+namespace Lithium.Server.Core.Systems.Commands;
 
 public sealed class ConsoleCommand
 {
