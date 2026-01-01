@@ -42,7 +42,7 @@ public sealed class ConsoleCommandRegistry
         if (method.ReturnType != typeof(void) &&
             !typeof(Task).IsAssignableFrom(method.ReturnType))
         {
-            throw new InvalidOperationException(
+            Console.WriteLine(
                 $"Command '{commandName}' must return {typeof(void)} or {typeof(Task)}");
         }
 
@@ -52,7 +52,7 @@ public sealed class ConsoleCommandRegistry
             {
                 var supportedTypes = string.Join(", ", GetSupportedTypes().Select(x => x.Name));
 
-                throw new InvalidOperationException(
+                Console.WriteLine(
                     $"Command '{commandName}' has unsupported parameter type '{p.ParameterType.Name}'. Supported types: {supportedTypes}");
             }
         }
