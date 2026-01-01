@@ -2,11 +2,11 @@
 using Lithium.Core.ECS;
 using Lithium.Server;
 using Lithium.Server.Core;
+using Lithium.Server.Core.Commands;
 using Lithium.Server.Core.Logging;
 using Lithium.Server.Core.Networking;
 using Lithium.Server.Core.Networking.Extensions;
 using Lithium.Server.Dashboard;
-using Lithium.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,7 +42,15 @@ builder.Services.AddHostedService<ServerLifetime>();
 builder.Services.AddHostedService<WorldService>();
 
 // Console command service
-builder.Services.AddHostedService<ConsoleCommandService>();
+builder.Services.AddSingleton(
+    new ConsoleCommandRegistry([
+        typeof(Program).Assembly
+    ])
+);
+
+builder.Services.AddSingleton<ConsoleCommandExecutor>();
+builder.Services.AddHostedService<ConsoleInputService>();
+builder.Services.AddSingleton<CoreCommands>();
 
 var app = builder.Build();
 
