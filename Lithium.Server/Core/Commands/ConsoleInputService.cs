@@ -6,12 +6,18 @@ public sealed class ConsoleInputService(
     ConsoleCommandExecutor executor
 ) : BackgroundService
 {
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        _ = Task.Run(ReadLoop, CancellationToken.None);
+        return Task.CompletedTask;
+    }
+
+    private async Task ReadLoop()
+    {
+        while (true)
         {
             var line = Console.ReadLine();
-            if (line is null) break;
+            if (line is null) return;
 
             var parts = CommandLineTokenizer.Tokenize(line);
             if (parts.Length is 0) continue;
