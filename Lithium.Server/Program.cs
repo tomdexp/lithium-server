@@ -51,14 +51,6 @@ Log.Logger = new LoggerConfiguration()
         s.TracesSampleRate = 1f;
         s.SetBeforeSendLog(static log =>
         {
-            var a = log.TryGetAttribute("force_send", out var a1);
-
-            Console.WriteLine("BeforeSendLog: " + string.Join(", ", a, a1));
-
-            if (log.TryGetAttribute("force_send", out var v) && v.ToString() is "true")
-                return log;
-
-            // Filter out all info logs
             return log.Level switch
             {
                 SentryLogLevel.Warning or SentryLogLevel.Error or SentryLogLevel.Fatal => log,
