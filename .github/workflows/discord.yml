@@ -63,29 +63,44 @@ jobs:
             AVATAR_URL="https://github.com/${{ github.event.issue.user.login }}.png"
             REPO="${{ github.repository }}"
             
+            # Limiter et échapper le body
             ISSUE_BODY=$(echo "$ISSUE_BODY" | head -c 2000)
-            DESCRIPTION="**Issue #${ISSUE_NUMBER} ${ACTION}**\n\n${ISSUE_BODY}\n\n[View Issue](<${ISSUE_URL}>)"
+            ISSUE_BODY_ESCAPED=$(echo "$ISSUE_BODY" | jq -Rs .)
             
-            cat > payload.json << EOF
+            # Construire le JSON proprement
+            cat > payload.json << 'EOF'
             {
               "username": "GitHub",
               "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
               "embeds": [{
                 "author": {
-                  "name": "${AUTHOR}",
-                  "icon_url": "${AVATAR_URL}"
+                  "name": "AUTHOR_PLACEHOLDER",
+                  "icon_url": "AVATAR_URL_PLACEHOLDER"
                 },
-                "title": "[${REPO}] ${ISSUE_TITLE}",
-                "url": "${ISSUE_URL}",
-                "description": $(echo "$DESCRIPTION" | jq -Rs .),
+                "title": "TITLE_PLACEHOLDER",
+                "url": "URL_PLACEHOLDER",
+                "description": "DESCRIPTION_PLACEHOLDER",
                 "color": 5814783,
                 "footer": {
                   "text": "GitHub APP"
                 },
-                "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)"
+                "timestamp": "TIMESTAMP_PLACEHOLDER"
               }]
             }
-          EOF
+            EOF
+            
+            # Remplacer les placeholders
+            TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%S.000Z)
+            TITLE_ESCAPED=$(echo "[${REPO}] ${ISSUE_TITLE}" | jq -Rs .)
+            DESCRIPTION="**Issue #${ISSUE_NUMBER} ${ACTION}**\n\n${ISSUE_BODY}\n\n[View Issue](<${ISSUE_URL}>)"
+            DESCRIPTION_ESCAPED=$(echo "$DESCRIPTION" | jq -Rs .)
+            
+            sed -i "s|AUTHOR_PLACEHOLDER|${AUTHOR}|g" payload.json
+            sed -i "s|AVATAR_URL_PLACEHOLDER|${AVATAR_URL}|g" payload.json
+            sed -i "s|\"TITLE_PLACEHOLDER\"|${TITLE_ESCAPED}|g" payload.json
+            sed -i "s|URL_PLACEHOLDER|${ISSUE_URL}|g" payload.json
+            sed -i "s|\"DESCRIPTION_PLACEHOLDER\"|${DESCRIPTION_ESCAPED}|g" payload.json
+            sed -i "s|TIMESTAMP_PLACEHOLDER|${TIMESTAMP}|g" payload.json
             
             curl -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
               -H "Content-Type: application/json" \
@@ -102,29 +117,44 @@ jobs:
             AVATAR_URL="https://github.com/${{ github.event.comment.user.login }}.png"
             REPO="${{ github.repository }}"
             
+            # Limiter et échapper le commentaire
             COMMENT_BODY=$(echo "$COMMENT_BODY" | head -c 2000)
-            DESCRIPTION="**New comment on issue #${ISSUE_NUMBER}**\n\n${COMMENT_BODY}\n\n[View Comment](<${ISSUE_URL}>)"
+            COMMENT_BODY_ESCAPED=$(echo "$COMMENT_BODY" | jq -Rs .)
             
-            cat > payload.json << EOF
+            # Construire le JSON proprement
+            cat > payload.json << 'EOF'
             {
               "username": "GitHub",
               "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
               "embeds": [{
                 "author": {
-                  "name": "${AUTHOR}",
-                  "icon_url": "${AVATAR_URL}"
+                  "name": "AUTHOR_PLACEHOLDER",
+                  "icon_url": "AVATAR_URL_PLACEHOLDER"
                 },
-                "title": "[${REPO}] ${ISSUE_TITLE}",
-                "url": "${ISSUE_URL}",
-                "description": $(echo "$DESCRIPTION" | jq -Rs .),
+                "title": "TITLE_PLACEHOLDER",
+                "url": "URL_PLACEHOLDER",
+                "description": "DESCRIPTION_PLACEHOLDER",
                 "color": 5814783,
                 "footer": {
                   "text": "GitHub APP"
                 },
-                "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)"
+                "timestamp": "TIMESTAMP_PLACEHOLDER"
               }]
             }
-          EOF
+            EOF
+            
+            # Remplacer les placeholders
+            TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%S.000Z)
+            TITLE_ESCAPED=$(echo "[${REPO}] ${ISSUE_TITLE}" | jq -Rs .)
+            DESCRIPTION="**New comment on issue #${ISSUE_NUMBER}**\n\n${COMMENT_BODY}\n\n[View Comment](<${ISSUE_URL}>)"
+            DESCRIPTION_ESCAPED=$(echo "$DESCRIPTION" | jq -Rs .)
+            
+            sed -i "s|AUTHOR_PLACEHOLDER|${AUTHOR}|g" payload.json
+            sed -i "s|AVATAR_URL_PLACEHOLDER|${AVATAR_URL}|g" payload.json
+            sed -i "s|\"TITLE_PLACEHOLDER\"|${TITLE_ESCAPED}|g" payload.json
+            sed -i "s|URL_PLACEHOLDER|${ISSUE_URL}|g" payload.json
+            sed -i "s|\"DESCRIPTION_PLACEHOLDER\"|${DESCRIPTION_ESCAPED}|g" payload.json
+            sed -i "s|TIMESTAMP_PLACEHOLDER|${TIMESTAMP}|g" payload.json
             
             curl -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
               -H "Content-Type: application/json" \
