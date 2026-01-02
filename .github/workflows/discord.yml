@@ -10,33 +10,28 @@ jobs:
     steps:
       - name: Send Discord webhook
         run: |
-          # Variables GitHub
-          COMMIT_AUTHOR="${{ github.actor }}"
-          BRANCH="${{ github.ref_name }}"
-          REPO_NAME="${{ github.event.repository.name }}"
-          SERVER_URL="${{ github.server_url }}"
-          REPO_FULL="${{ github.repository }}"
-
-          # Par défaut message
+          # Default message
           MESSAGE="${{ github.event_name }}"
 
           if [ "${{ github.event_name }}" = "push" ]; then
-            # Récupérer le dernier commit
+            # Récupérer le commit
+            COMMIT_AUTHOR="${{ github.actor }}"
             COMMIT_MESSAGE=$(jq -r '.head_commit.message' <<< '${{ toJSON(github.event) }}')
             COMMIT_URL=$(jq -r '.head_commit.url' <<< '${{ toJSON(github.event) }}')
+            BRANCH="${{ github.ref_name }}"
+            REPO="${{ github.event.repository.name }}"
 
-            # Construire le message selon ton format
-            MESSAGE="[${COMMIT_AUTHOR}](https://github.com/${COMMIT_AUTHOR})\n[${COMMIT_MESSAGE}](${COMMIT_URL})\n\n• [${COMMIT_AUTHOR}](https://github.com/${COMMIT_AUTHOR}) on [${REPO_NAME}](${SERVER_URL}/${REPO_FULL}/tree/${BRANCH}) / ${BRANCH}"
+            # Construire le message avec de vrais sauts de ligne
+            MESSAGE="[${COMMIT_AUTHOR}](https://github.com/${COMMIT_AUTHOR})
+            [${COMMIT_MESSAGE}](${COMMIT_URL})
+
+            - [${COMMIT_AUTHOR}](https://github.com/${COMMIT_AUTHOR}) on [${REPO}](${{ github.server_url }}/${{ github.repository }}/tree/${BRANCH}) / ${BRANCH}"
           fi
 
-          # Échapper le JSON
-          MESSAGE_ESCAPED=$(echo "$MESSAGE" | jq -Rs .)
+          # Convertir les sauts de ligne en \n pour JSON
+          MESSAGE_JSON=$(echo "$MESSAGE" | awk '{printf "%s\\n", $0}' | sed 's/\\n$//')
 
           # Envoyer le webhook
           curl -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"username\": \"${COMMIT_AUTHOR}\",
-              \"avatar_url\": \"https://github.com/${COMMIT_AUTHOR}.png\",
-              \"content\": ${MESSAGE_ESCAPED}
-            }"
+            -d "{\"username\":\"${{ github.actor }}\",\"avatar_url\":\"https://github.com/${{ github.actor }}.png\",\"content\":\"${MESSAGE_JSON}\"}"
