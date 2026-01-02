@@ -16,5 +16,5 @@ jobs:
             -d '{
               "username": "${{ github.actor }}",
               "avatar_url": "${{ github.event.sender.avatar_url }}",
-              "content": "Nouvel événement sur **${{ github.repository }}**"
+              "content": "**Event:** `${{ github.event_name }}`\nRepo: `${{ github.repository }}`"
             }'
