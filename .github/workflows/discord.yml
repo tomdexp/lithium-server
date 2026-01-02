@@ -10,49 +10,26 @@ jobs:
     steps:
       - name: Send Discord webhook
         run: |
-          ACTOR="${{ github.actor }}"
-          BRANCH="${{ github.ref_name }}"
-          REPO_NAME="${{ github.event.repository.name }}"
-          SERVER_URL="${{ github.server_url }}"
-          REPO_FULL="${{ github.repository }}"
-
+          # Default message
           MESSAGE="${{ github.event_name }}"
 
-          # ----------------------
-          # Push event
-          # ----------------------
           if [ "${{ github.event_name }}" = "push" ]; then
+            # Récupérer le commit
+            COMMIT_AUTHOR="${{ github.actor }}"
             COMMIT_MESSAGE=$(jq -r '.head_commit.message' <<< '${{ toJSON(github.event) }}')
             COMMIT_URL=$(jq -r '.head_commit.url' <<< '${{ toJSON(github.event) }}')
+            BRANCH="${{ github.ref_name }}"
+            REPO="${{ github.event.repository.name }}"
 
-            MESSAGE="[${ACTOR}](https://github.com/${ACTOR})\n[${COMMIT_MESSAGE}](${COMMIT_URL})\n\n• [${ACTOR}](https://github.com/${ACTOR}) on [${REPO_NAME}](${SERVER_URL}/${REPO_FULL}/tree/${BRANCH}) / ${BRANCH}"
+            # Construire le message avec de vrais sauts de ligne
+            MESSAGE="${COMMIT_MESSAGE}
+            - [${COMMIT_AUTHOR}](<https://github.com/${COMMIT_AUTHOR}>) on [${REPO}](<${{ github.server_url }}/${{ github.repository }}>)/[${BRANCH}](<${{ github.server_url }}/${{ github.repository }}/tree/${BRANCH}>)"
           fi
 
-          # ----------------------
-          # Pull request merged
-          # ----------------------
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            PR_ACTION=$(jq -r '.action' <<< '${{ toJSON(github.event) }}')
-            PR_MERGED=$(jq -r '.pull_request.merged' <<< '${{ toJSON(github.event) }}')
-            PR_TITLE=$(jq -r '.pull_request.title' <<< '${{ toJSON(github.event) }}')
-            PR_URL=$(jq -r '.pull_request.html_url' <<< '${{ toJSON(github.event) }}')
-            PR_BRANCH=$(jq -r '.pull_request.head.ref' <<< '${{ toJSON(github.event) }}')
-
-            if [ "$PR_ACTION" = "closed" ] && [ "$PR_MERGED" = "true" ]; then
-              MESSAGE="[${ACTOR}](https://github.com/${ACTOR})\n[PR Merged: ${PR_TITLE}](${PR_URL})\n\n• [${ACTOR}](https://github.com/${ACTOR}) on [${REPO_NAME}](${SERVER_URL}/${REPO_FULL}/tree/${PR_BRANCH}) / ${PR_BRANCH}"
-            fi
-          fi
-
-          # ----------------------
-          # Échapper le JSON
-          # ----------------------
-          MESSAGE_ESCAPED=$(echo "$MESSAGE" | jq -Rs .)
+          # Convertir les sauts de ligne en \n pour JSON
+          MESSAGE_JSON=$(echo "$MESSAGE" | awk '{printf "%s\\n", $0}' | sed 's/\\n$//')
 
           # Envoyer le webhook
           curl -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"username\": \"${ACTOR}\",
-              \"avatar_url\": \"https://github.com/${ACTOR}.png\",
-              \"content\": ${MESSAGE_ESCAPED}
-            }"
+            -d "{\"username\":\"${{ github.actor }}\",\"avatar_url\":\"https://github.com/${{ github.actor }}.png\",\"content\":\"${MESSAGE_JSON}\"}"
