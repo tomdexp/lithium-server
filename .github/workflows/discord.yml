@@ -1,0 +1,20 @@
+name: Discord notification
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Discord webhook
+        run: |
+          curl -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "username": "${{ github.actor }}",
+              "avatar_url": "${{ github.event.sender.avatar_url }}",
+              "content": "Nouvel événement sur **${{ github.repository }}**"
+            }'
