@@ -28,8 +28,7 @@ jobs:
             # Limiter le body à 2000 caractères
             ISSUE_BODY=$(echo "$ISSUE_BODY" | head -c 2000)
             
-            DESCRIPTION="${ISSUE_BODY}
-            - [View Issue](<${ISSUE_URL}>)"
+            DESCRIPTION="${ISSUE_BODY}"
             
           elif [ "${{ github.event_name }}" = "issue_comment" ]; then
             # Notification pour commentaire
