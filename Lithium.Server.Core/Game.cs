@@ -25,7 +25,7 @@ public class Game
 
         foreach (var e in World.Query<Position, Velocity>().WithTag<DogTag>())
         {
-            ref readonly var entity = ref e.Entity;
+            var entity = e.Entity;
             ref readonly var pos = ref e.Component1;
             ref readonly var rot = ref e.Component2;
 
@@ -43,7 +43,7 @@ public class Game
 
         foreach (var query in queries)
         {
-            ref readonly var entity = ref query.Entity;
+            var entity = query.Entity;
             ref var pos = ref query.Component1;
             ref var rot = ref query.Component2;
 
