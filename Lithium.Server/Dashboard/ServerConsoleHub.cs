@@ -11,7 +11,6 @@ public sealed class ServerConsoleHub(
     public async Task ExecuteCommand(string commandLine)
     {
         if (string.IsNullOrWhiteSpace(commandLine)) return;
-
         if (!commandLine.StartsWith('/')) return;
         
         // Remove leading slash if present before sending, or handle on server
@@ -28,6 +27,7 @@ public sealed class ServerConsoleHub(
             try
             {
                 await executor.ExecuteAsync(command, args);
+                Serilog.Log.Information("Executed command '{Command}'", commandName);
             }
             catch (Exception ex)
             {
@@ -39,7 +39,7 @@ public sealed class ServerConsoleHub(
             Serilog.Log.Warning("Unknown command: {Command}", commandName);
         }
     }
-
+    
     public async Task RequestCommandSuggestions(string input)
     {
         if (string.IsNullOrWhiteSpace(input))
