@@ -37,4 +37,4 @@ Here is the current development roadmap, with progress tracked using checkboxes:
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/lithium-clr/LithiumCLR.git
+git clone https://github.com/lithium-clr/lithium-server.git
