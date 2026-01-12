@@ -21,7 +21,8 @@ public class QueryTests
         e3.AddComponent(new Position { X = 30 });
         e3.AddComponent(new Velocity { X = 3 });
 
-        int count = 0;
+        var count = 0;
+        
         _world.Query<Position, Velocity>().ForEachEntity((ref readonly Entity e, ref Position p, ref Velocity v) =>
         {
             count++;
@@ -50,7 +51,8 @@ public class QueryTests
         e2.AddComponent(new Velocity());
         // e2 has no tag
 
-        int count = 0;
+        var count = 0;
+        
         _world.Query<Position, Velocity>()
             .WithTag<TagA>()
             .ForEachEntity((ref readonly Entity e, ref Position p, ref Velocity v) => { count++; });
@@ -70,7 +72,8 @@ public class QueryTests
         e2.AddComponent(new Position());
         e2.AddComponent(new Velocity());
 
-        int count = 0;
+        var count = 0;
+        
         _world.Query<Position, Velocity>()
             .WithoutTag<TagA>()
             .ForEachEntity((ref readonly Entity e, ref Position p, ref Velocity v) => { count++; });
