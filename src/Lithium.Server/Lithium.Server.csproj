@@ -41,4 +41,20 @@
       <Folder Include="Core\Systems\" />
     </ItemGroup>
 
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Native.Quic.MsQuic.OpenSSL"
+                          Version="2.3.5"
+                          PrivateAssets="all"
+                          GeneratePathProperty="true" />
+
+        <RuntimeHostConfigurationOption Include="System.Net.Quic.AppLocalMsQuic" Value="true" />
+    </ItemGroup>
+
+    <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
+        <Copy SourceFiles="$(PkgMicrosoft_Native_Quic_MsQuic_OpenSSL)\build\native\bin\x64\msquic.dll" DestinationFolder="$(OutDir)" />
+    </Target>
+    <Target Name="CopyCustomContentOnPublish" AfterTargets="Publish">
+        <Copy SourceFiles="$(PkgMicrosoft_Native_Quic_MsQuic_OpenSSL)\build\native\bin\x64\msquic.dll" DestinationFolder="$(PublishDir)" />
+    </Target>
+
 </Project>
