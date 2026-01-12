@@ -1,6 +1,0 @@
-﻿services:
-  lithium.server:
-    image: lithium.server
-    build:
-      context: .
-      dockerfile: src/Lithium.Server/Dockerfile
