@@ -38,3 +38,27 @@ Here is the current development roadmap, with progress tracked using checkboxes:
 
 ```bash
 git clone https://github.com/lithium-clr/lithium-server.git
+```
+
+## Aspire
+
+We use Aspire to build and run the server.
+Aspire is great because it provides a cross-platform, unified development experience, code-first configuration, and local orchestration (which is really important when developing mods with local servers).
+
+Aspire Docs: https://aspire.dev/docs/
+
+Aspire is also backed by the .NET Foundation, and is a growing project with a lot of contributors (https://github.com/dotnet/aspire).
+
+### Prerequisites
+
+- [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
+- [Aspire CLI](https://aspire.dev/get-started/install-cli/)
+- Docker Engine (Docker Desktop for Windows/Mac, or Docker Engine for Linux)
+
+### Using Aspire
+
+To run the server, use the following command from the root of the repository:
+```bash
+aspire run
+```
+You should see Aspire starting up, if everything is working correctly, it should ouput an url for the Aspire Dashboard. You can open this in your browser to see each resource states.
