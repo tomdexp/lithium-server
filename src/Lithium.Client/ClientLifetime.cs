@@ -13,6 +13,20 @@ public sealed class ClientLifetime(
     {
         logger.LogInformation("Starting client");
 
-        await connection.ConnectAsync(stoppingToken);
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                await connection.ConnectAsync(stoppingToken);
+                break; // Connected successfully
+            }
+            catch (Exception ex)
+            {
+                // This is expected when running with Aspire, resources order is not guaranteed 
+                // (we can make client wait for server to start, but it's whole execution won't start until server is ready, which is slower then retrying)
+                logger.LogWarning("Failed to connect to server: {Message}. Retrying in 2 seconds...", ex.Message);
+                await Task.Delay(2000, stoppingToken);
+            }
+        }
     }
 }
