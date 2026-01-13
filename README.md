@@ -55,11 +55,26 @@ Aspire is also backed by the .NET Foundation, and is a growing project with a lo
 - [Aspire CLI](https://aspire.dev/get-started/install-cli/)
 - Docker Engine (Docker Desktop for Windows/Mac, or Docker Engine for Linux)
 
+### Installing Aspire CLI
+
+To install Aspire use the following command
+
+For bash
+```bash
+curl -sSL https://aspire.dev/install.sh | bash
+```
+
+For PowerShell
+```ps
+irm https://aspire.dev/install.ps1 | iex
+```
+
+You can check the official website of the Aspire CLI for more details : https://aspire.dev/get-started/install-cli/
+
 ### Using Aspire
 
 To run the server, use the following command from the root of the repository:
 ```bash
-dotnet tool install -g Aspire.Cli
 aspire run
 ```
 You should see Aspire starting up, if everything is working correctly, it should ouput an url for the Aspire Dashboard. You can open this in your browser to see each resource states.
