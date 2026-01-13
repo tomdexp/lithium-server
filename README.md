@@ -59,6 +59,7 @@ Aspire is also backed by the .NET Foundation, and is a growing project with a lo
 
 To run the server, use the following command from the root of the repository:
 ```bash
+dotnet tool install -g Aspire.Cli
 aspire run
 ```
 You should see Aspire starting up, if everything is working correctly, it should ouput an url for the Aspire Dashboard. You can open this in your browser to see each resource states.
