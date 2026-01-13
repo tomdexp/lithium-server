@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/Src/">
+    <Project Path="src/Lithium.AppHost/Lithium.AppHost.csproj" />
     <Project Path="src/Lithium.Client/Lithium.Client.csproj" />
     <Project Path="src/Lithium.Core.ECS/Lithium.Core.ECS.csproj" />
     <Project Path="src/Lithium.Core/Lithium.Core.csproj" />
