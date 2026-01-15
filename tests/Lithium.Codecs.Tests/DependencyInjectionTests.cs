@@ -21,4 +21,39 @@ public sealed class DependencyInjectionTests
         
         Assert.IsType<IntegerCodec>(registry.Get<int>());
     }
+
+    [Fact]
+    public void TryGet_Finds_RegisteredCodec()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddLithiumCodecs();
+        var serviceProvider = services.BuildServiceProvider();
+        var registry = serviceProvider.GetRequiredService<ICodecRegistry>();
+
+        // Act
+        var result = registry.TryGet<int>(out var codec);
+
+        // Assert
+        Assert.True(result);
+        Assert.NotNull(codec);
+        Assert.IsType<IntegerCodec>(codec);
+    }
+
+    [Fact]
+    public void TryGet_DoesNotFind_UnregisteredCodec()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddLithiumCodecs();
+        var serviceProvider = services.BuildServiceProvider();
+        var registry = serviceProvider.GetRequiredService<ICodecRegistry>();
+
+        // Act
+        var result = registry.TryGet<Guid>(out var codec);
+
+        // Assert
+        Assert.False(result);
+        Assert.Null(codec);
+    }
 }
