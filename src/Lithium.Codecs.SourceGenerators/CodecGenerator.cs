@@ -54,7 +54,7 @@ public sealed class CodecGenerator : IIncrementalGenerator
     {
         if (classes.IsDefaultOrEmpty) return;
 
-        var distinctClasses = classes.Where(c => c != null).Distinct();
+        var distinctClasses = classes.Where(c => c is not null).Distinct();
 
         foreach (var classSyntax in distinctClasses)
         {
